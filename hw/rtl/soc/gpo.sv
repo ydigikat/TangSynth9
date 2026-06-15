@@ -1,9 +1,5 @@
 //------------------------------------------------------------------------------
-// Estella (c) Jason Wilden 2026
-//------------------------------------------------------------------------------
-// This is a trivial general purpose output module.  The pins can be set or
-// cleared by the firmware however the IO pins are passed in by the caller
-// and cannot be modified.
+// (c) Jason Wilden 2026
 //------------------------------------------------------------------------------
 `default_nettype none
 `include "defs.svh"

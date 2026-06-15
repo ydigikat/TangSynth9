@@ -168,9 +168,11 @@ set RTL_FILES [list \
     "$RTL_DIR/soc/sram.sv" \
     "$RTL_DIR/soc/gpo.sv" \
     "$RTL_DIR/soc/pcr.sv" \
-    "$RTL_DIR/soc/trace.sv" \
+    "$RTL_DIR/soc/ser_in.sv" \
+    "$RTL_DIR/soc/ser_out.sv" \
     "$RTL_DIR/soc/sram_block.sv" \
     "$RTL_DIR/soc/buffer.sv" \
+    "$RTL_DIR/soc/uart_rx.sv" \
     "$RTL_DIR/soc/uart_tx.sv" \
     "$RTL_DIR/soc/vram.sv" \
     "$RTL_DIR/audio/i2s_tx.sv" \

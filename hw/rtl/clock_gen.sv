@@ -1,9 +1,5 @@
 //------------------------------------------------------------------------------
-// Estella (c) Jason Wilden 2026
-//------------------------------------------------------------------------------
-// This generates a 24MHz clock from the PLL IP. This provides a modest speed that
-// is sufficient for audio processing while not causing timing problems with the
-// longer combinatorial chains in the picorv32.
+// (c) Jason Wilden 2026
 //------------------------------------------------------------------------------
 `default_nettype none
 

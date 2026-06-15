@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
-// Estella (c) Jason Wilden 2026
+// (c) Jason Wilden 2026
 //------------------------------------------------------------------------------
 `default_nettype none
 `include "../defs.svh"
 
-module uart_tx (
+module serial_tx (
   input  `VAR logic        clk_i,
   input  `VAR logic        rst_ni,
   input  `VAR logic [10:0] div_i,

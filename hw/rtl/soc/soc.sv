@@ -1,10 +1,5 @@
 //------------------------------------------------------------------------------
-// Estella (c) Jason Wilden 2026
-//------------------------------------------------------------------------------
-// This provides the wrapper for the picorv32 CPU and wires up the peripherals,
-// interrupts, and RAM.
-//
-// It uses the native memory interface.
+// (c) Jason Wilden 2026
 //------------------------------------------------------------------------------
 
 `default_nettype none
