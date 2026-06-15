@@ -309,6 +309,50 @@ void channel_filter_accepts_ch16(void)
 }
 
 /* -------------------------------------------------------------------------
+ * Buffer
+ * ---------------------------------------------------------------------- */
+void can_buffer_byte(void)
+{
+  uint8_t byte = 0x9F;
+  uint8_t byte_out = 0x00;
+
+  midi_buffer_write(byte);
+  midi_buffer_read(&byte_out);
+
+  TEST_ASSERT_EQUAL_UINT8(byte, byte_out);
+}
+
+void buffer_discards_incoming_when_full(void)
+{
+  uint8_t byte_out = 0x00;
+
+  /* Fill buffer */
+  midi_buffer_write(0x01);
+  midi_buffer_write(0x02);
+  midi_buffer_write(0x03);
+  midi_buffer_write(0x04);
+  midi_buffer_write(0x05);
+  midi_buffer_write(0x06);
+  midi_buffer_write(0x07);
+  midi_buffer_write(0x08);
+  midi_buffer_write(0x09);
+  midi_buffer_write(0x0A);
+  midi_buffer_write(0x0B);
+  midi_buffer_write(0x0C);
+  midi_buffer_write(0x0D);
+  midi_buffer_write(0x0E);
+  midi_buffer_write(0x0F);  
+
+  /* Add one more */
+  midi_buffer_write(0x10);
+
+  /* Should not be stored into buffer */
+  midi_buffer_read(&byte_out);
+  TEST_ASSERT_EQUAL_UINT8(0x01,byte_out);
+}
+
+
+/* -------------------------------------------------------------------------
  * Runner
  * ---------------------------------------------------------------------- */
 int main(void)
@@ -349,6 +393,9 @@ int main(void)
   RUN_TEST(channel_filter_accepts_ch1);
   RUN_TEST(omni_accepts_ch2);
   RUN_TEST(omni_accepts_ch6);
+  /* Buffer*/
+  RUN_TEST(can_buffer_byte);
+  RUN_TEST(buffer_discards_incoming_when_full);
   
   return UNITY_END();
 }
