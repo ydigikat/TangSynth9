@@ -22,11 +22,14 @@ module soc #(parameter string B0_MEM_FILE,    // ROM byte files
   output      logic       pipe_vram_valid_o,
   output      logic       pipe_vram_update_o,
 
-  // MMIO module outputs
+
+  // Module IO 
   output     logic[15:0]  gpo_o,  
   output     logic        trap_o,
   output     logic        trace_o,
-  output     logic[15:0]  debug_o  
+  output     logic[15:0]  debug_o,
+  output     logic        midi_o,
+  input `VAR logic        midi_i
 
 
 );
@@ -49,6 +52,7 @@ localparam int VRAM_ADDR = 32'h0001_0000;
 localparam int GPO_ADDR = 32'h8000_0000;
 localparam int TRACE_ADDR =  32'h8000_0040;
 localparam int PCR_ADDR =  32'h8000_0080;
+localparam int MIDI_ADDR = 32'h8000_00C0;
 
 //------------------------------------------------------------------------------
 // Native memory interface signals
@@ -122,23 +126,25 @@ picorv32 #(
 //------------------------------------------------------------------------------
 // Address decoder 
 //------------------------------------------------------------------------------
-logic sram_sel, tick_sel, gpo_sel, trace_sel, vram_sel, pcr_sel;
+logic sram_sel, tick_sel, gpo_sel, trace_sel, vram_sel, pcr_sel, midi_sel;
 
 assign sram_sel = mem_valid && (mem_addr  < SRAM_SIZE);  
 assign vram_sel = mem_valid && (mem_addr >= VRAM_ADDR && mem_addr < GPO_ADDR);
 assign gpo_sel =  mem_valid && (mem_addr >= GPO_ADDR && mem_addr < GPO_ADDR + 'h40);
 assign trace_sel =  mem_valid && (mem_addr >= TRACE_ADDR && mem_addr < TRACE_ADDR + 'h40);
 assign pcr_sel = mem_valid && (mem_addr >= PCR_ADDR && mem_addr < PCR_ADDR + 'h40);
+assign midi_sel = mem_valid && (mem_addr >= MIDI_ADDR && mem_addr < MIDI_ADDR + 'h40);
 
 //------------------------------------------------------------------------------
 // Data bus selector
 //------------------------------------------------------------------------------
-assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | pcr_rdy); 
+assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | pcr_rdy | midi_rdy); 
 
 assign mem_rdata = sram_sel ? sram_rdata :                    
                    vram_sel ? vram_rdata : 
                    gpo_sel ? gpo_rdata : 
                    pcr_sel ? pcr_rdata :
+                   midi_sel ? midi_rdata :
                    trace_sel ? trace_rdata : 
                    32'h0;
 
@@ -253,7 +259,23 @@ pcr u_pcr(
   .mem_rdata_o(pcr_rdata)
 );
 
+//------------------------------------------------------------------------------
+// MIDI in module - this is just the serial rx, no MIDI parsing done here.
+//------------------------------------------------------------------------------
+logic midi_rdy;
+logic [31:0] midi_rdata;
 
+midi u_midi(
+  .clk_i(clk_i),
+  .rst_ni(rst_ni),
+  .select_i(midi_sel),
+  .midi_i(midi_i),
+  .mem_ready_o(midi_rdy),
+  .mem_addr_i(mem_addr),
+  .mem_wstrb_i(mem_wstrb),
+  .mem_wdata_i(mem_wdata),
+  .mem_rdata_o(midi_rdata)
+);
 
 //------------------------------------------------------------------------------
 // Outputs

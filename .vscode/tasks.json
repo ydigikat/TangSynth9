@@ -17,7 +17,7 @@
     {
       "label": "HW: Build",
       "type": "shell",
-      "command": "${workspaceFolder}/hw/tools/gw.sh ${workspaceFolder}/hw/tools/build.tcl",
+      "command": "/opt/gowin/IDE/bin/gw_sh ${workspaceFolder}/hw/tools/build.tcl",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"

@@ -2,7 +2,7 @@
 // (c) Jason Wilden 2026
 //------------------------------------------------------------------------------
 `default_nettype none
-`include "../../defs.svh"
+`include "../defs.svh"
 
 
 module midi (
@@ -20,6 +20,19 @@ module midi (
   output      logic [31:0] mem_rdata_o     
 
 );
+
+
+serial_rx u_rx
+(
+  .clk_i(clk_i),
+  .rst_ni(rst_ni),
+  .div_i(),
+  .rx_i(),
+  .rx_done_o(),
+  .data_o()
+);  
+
+
 endmodule
 
 

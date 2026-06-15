@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 
 `default_nettype none
-`include "../../common_defs.svh"
+`include "../defs.svh"
 
 
 module serial_rx 
@@ -15,6 +15,14 @@ module serial_rx
   output      logic       rx_done_o,
   output      logic[7:0]  data_o
 );
+
+typedef enum logic[2:0] 
+{  
+  Idle,
+  Start,
+  Data,
+  Stop
+} uart_state_t;
 
 //---------------------------------------------------------------------------
 // State registers
@@ -113,10 +121,6 @@ always_comb begin
   endcase
 end
 
-//---------------------------------------------------------------------------
-// Outputs
-//---------------------------------------------------------------------------
-assign data_o = data;
 
 endmodule
 
