@@ -38,7 +38,7 @@ The MCU handles the more complicated and slower rate logic, concerned with voice
 
 The RTL data-plane handles the voice DSP and is independent from the MCU.
 
-Communication between the 2 is enabled using an audio-interrupt from the I2S peripheral which signals to the MCU that data updates can be safely made to the voice configuration registers (timed between samples to avoid glitches).
+Communication uses the audio-interrupt from the I2S peripheral which signals to the MCU that data updates can be safely made to the voice configuration registers (timed between samples to avoid glitches).
 
 Data updates are made using shared memory (VRAM).  The audio interrupt ISR uses a shared control register (PCR) to indicate when the shared data can be read.
 
