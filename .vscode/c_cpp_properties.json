@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "RISC-V minimal",
+            "compilerPath": "/opt/riscv32i/bin/riscv32-unknown-elf-gcc",
+            "cStandard": "c11",
+            "intelliSenseMode": "gcc-x86",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/riscv32i/riscv32-unknown-elf/include/**"
+            ],
+            "defines": [
+                "__riscv",
+                "__riscv_xlen=32"
+            ]
+        }
+    ],
+    "version": 4
+}

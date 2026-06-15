@@ -1,0 +1,68 @@
+{
+    "version": 2,
+    "configurePresets": [
+      {
+        "name": "default",
+        "hidden": true,
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/build/${presetName}/build",
+        "cacheVariables": {
+          "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/install",        
+          "CMAKE_TOOLCHAIN_FILE": {
+            "type": "FILEPATH",
+            "value": "${sourceDir}/cmake/rv32imc_gcc.cmake"
+          }
+        },
+        "architecture": {
+          "value": "unspecified",
+          "strategy": "external"
+        },
+        "vendor": {
+          "microsoft.com/VisualStudioSettings/CMake/1.0": {
+            "intelliSenseMode": "linux-gcc-arm"
+          }
+        }
+      },
+      {
+        "name": "debug",
+        "inherits": "default",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug"
+        }
+      },
+      {
+        "name": "release",
+        "inherits": "default",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release",
+          "PRESET_NAME": "release"
+        }
+      },
+      {
+        "name": "test",
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/build/test",
+        "cacheVariables": {
+          "CMAKE_TOOLCHAIN_FILE": {
+            "type": "FILEPATH",
+            "value": "${sourceDir}/cmake/host_gcc.cmake"
+          },
+          "CMAKE_BUILD_TYPE": "Debug"
+        }
+      }
+    ],
+    "buildPresets": [
+      {
+        "name": "debug",
+        "configurePreset": "debug"
+      },
+      {
+        "name": "release",
+        "configurePreset": "release"
+      },
+      {
+        "name": "test",
+        "configurePreset": "test"
+      }
+    ]
+  }

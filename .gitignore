@@ -1,0 +1,20 @@
+# Build outputs - temporary project created by gw_sh
+project/
+build/
+handoff/
+
+# Analog discovery files
+*.dwf3logic
+*.dwf3work
+
+# Trace files
+*.fst
+*.log
+
+
+
+
+
+
+
+
