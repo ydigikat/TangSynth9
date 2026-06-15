@@ -69,6 +69,16 @@ The SOC provides a set of design specific MMIO modules:
 | 7 | A mixer sums the voice outputs before transmitting via the I2S peripheral, the I2S peripheral signals when it is ready for the sample| 
 | 8 | The I2S peripheral drives timing (sample request/audio IRQ) as well as output of samples|
 
+## Timing
+
+A single 24MHz clock times both the MCU and the audio pipeline.  This is a conservative value chosen to avoid timing challenges in the picorv32 which has some combinatorial chains with long propagation delays.  While modest, it is sufficient for audio processing and the control functions required.
+
+The 24MHz clock is divided down to a 3MHz bit clock for the I2S peripheral.  This clock rate, the best the PLL can achieve, is not precisely that needed for a 48kHz Fs resulting instead in a 46.875kHz rate.
+
+*Fs = BCLK / 64 = 3MHz / 64 = 46875 Hz*
+
+This error is within tolerance for most DACs and should be corrected for by the source unit generator (FCW).
+
 ## Fixed Point Arithmetic Sizing
 
 | Signal | Range | Format | Notes |
