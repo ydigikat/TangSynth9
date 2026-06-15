@@ -3,6 +3,7 @@
  */
 
 #include "drv.h" 
+#include "midi.h"
 
 static volatile uint32_t aud_irq_count;
 

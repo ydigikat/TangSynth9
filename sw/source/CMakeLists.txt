@@ -12,7 +12,9 @@ set(BSP_DIR ${SRC_DIR}/bsp)
 
 # Main application
 set(SRCS_APP
-  ${SRC_DIR}/main.c  
+  ${SRC_DIR}/main.c 
+
+  ${SRC_DIR}/synth/midi.c 
 )
 
 set(INCL_APP ${SRC_DIR} ${SRC_DIR}/synth)
