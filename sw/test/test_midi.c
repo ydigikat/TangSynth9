@@ -1,7 +1,5 @@
 /*
- * Estella : (c) Jason Wilden, 2026
- *
- * Unit tests for midi.c
+ * (c) Jason Wilden, 2026
  */
 
 #include "unity.h"

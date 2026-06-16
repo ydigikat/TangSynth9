@@ -1,5 +1,5 @@
 /*
-*  Estella : (c) Jason Wilden, 2026
+*  (c) Jason Wilden, 2026
 */
 
 #ifndef __MIDI_H__

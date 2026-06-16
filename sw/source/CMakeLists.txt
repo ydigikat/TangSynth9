@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Jason Wilden 2025
+# Jason Wilden 20276
 #------------------------------------------------------------------------------
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -14,7 +14,10 @@ set(BSP_DIR ${SRC_DIR}/bsp)
 set(SRCS_APP
   ${SRC_DIR}/main.c 
 
+  ${SRC_DIR}/synth/synth.c 
   ${SRC_DIR}/synth/midi.c 
+  ${SRC_DIR}/synth/voice.c 
+      
 )
 
 set(INCL_APP ${SRC_DIR} ${SRC_DIR}/synth)
