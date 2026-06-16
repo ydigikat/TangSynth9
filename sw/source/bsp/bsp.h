@@ -51,7 +51,7 @@ typedef struct
 typedef struct 
 {
     __IO uint32_t CR; /* Control register */
-} PCR_t;
+} APCR_t;
 
 
 /* ----------------------------------------------------------------------------
@@ -59,14 +59,14 @@ typedef struct
  * --------------------------------------------------------------------------*/
 #define GPO1_BASE (PERIPH_BASE + 0x00UL)
 #define TRACE_BASE (PERIPH_BASE + 0x40UL)
-#define PCR_BASE (PERIPH_BASE + 0x80UL)
+#define APCR_BASE (PERIPH_BASE + 0x80UL)
 
 /* ----------------------------------------------------------------------------
  * Built-in peripheral instances (MMIO)
  * --------------------------------------------------------------------------*/
 #define GPO1 ((GPO_t *)GPO1_BASE)
 #define TRACE ((TRACE_t *)TRACE_BASE)
-#define PCR ((CTRL_t *)PCR_BASE)
+#define APCR ((APCR_t *)APCR_BASE)
 
 
 /* ----------------------------------------------------------------------------
@@ -152,10 +152,10 @@ typedef struct
 static const uint8_t TRACE_DIV = (SYS_FREQ/(115200*16)-1); /*!< 115200 divisor */
 
 /* ----------------------------------------------------------------------------
- * Pipeline Control Register (PCR)
+ * Audio Pipeline Control Register (APCR)
  * --------------------------------------------------------------------------*/
-#define PCR_CR_VRAM_UPDATE_Pos (0U)
-#define PCR_CR_VRAM_UPDATE_Msk (0x1UL << PCR_CR_VRAM_UPDATE_Pos)
-#define PCR_CR_VRAM_UPDATE (PCR_CR_VRAM_UPDATE_Msk)   // [0] Update from VRAM
+#define APCR_CR_VRAM_UPDATE_Pos (0U)
+#define APCR_CR_VRAM_UPDATE_Msk (0x1UL << APCR_CR_VRAM_UPDATE_Pos)
+#define APCR_CR_VRAM_UPDATE (APCR_CR_VRAM_UPDATE_Msk)   // [0] Update from VRAM
 
 #endif /* __BSP_H__ */

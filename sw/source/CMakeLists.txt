@@ -14,13 +14,13 @@ set(BSP_DIR ${SRC_DIR}/bsp)
 set(SRCS_APP
   ${SRC_DIR}/main.c 
 
-  ${SRC_DIR}/synth/synth.c 
-  ${SRC_DIR}/synth/midi.c 
-  ${SRC_DIR}/synth/voice.c 
+  ${SRC_DIR}/controller/controller.c 
+  ${SRC_DIR}/controller/midi.c 
+  ${SRC_DIR}/controller/voice.c 
       
 )
 
-set(INCL_APP ${SRC_DIR} ${SRC_DIR}/synth)
+set(INCL_APP ${SRC_DIR} ${SRC_DIR}/controller)
 set(DEFS_APP $<$<CONFIG:DEBUG>: DEBUG>)
 
 # Size of the BSRAM in words on target FPGA.
