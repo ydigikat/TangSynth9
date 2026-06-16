@@ -5,6 +5,11 @@
 #include "controller.h"
 #include "drv.h"
 
+/* Number of samples in each control-rate cycle */
+#define LAST_IRQ_IN_CYCLE (46U)
+
+static struct midi_instance midi_in;
+
 /* Private functions */
 static void note_on(struct controller *controller, uint8_t note, uint8_t velocity);
 static void note_off(struct controller *controller, uint8_t note);
@@ -75,6 +80,55 @@ void controller_calculate(struct controller *controller)
   {
     voice_calculate(&controller->voice[i]);
   }
+}
+
+/*
+* Executes the control-rate calculation cycle by counting the interrupts.
+*/
+uint8_t controller_execute(struct controller *controller, uint8_t irq_count)
+{ 
+    
+    if (irq_count == 1U)
+    {
+      /*
+      * On the first interrupt of a cycle we:
+      *
+      * - set the APCR register to stop the audio pipeline updating from VRAM
+      * - parse any buffered MIDI events
+      * - process all the voice calculations (modulators & lifecycle)
+      * - copy the new calculated values into VRAM.
+      */
+
+      CLEAR_BIT(APCR->CR, APCR_CR_VRAM_UPDATE);      
+       
+      uint8_t byte;
+      while (midi_buffer_read(&byte))
+      {
+        struct midi_msg *msg = midi_parse(&midi_in, byte);
+        if (msg != NULL)
+        {
+          controller_handle_midi(controller, msg);
+        }
+      }
+      
+      controller_calculate(controller);
+      
+      // TODO: Copy to VRAM here
+
+    } 
+    else if (irq_count == LAST_IRQ_IN_CYCLE)
+    {
+      /*
+       * On the last interrupt of the cycle we:
+       *
+       * - set the APCR register so the pipeline updates before next sample
+       * - reset the sample counter. 
+       */      
+      SET_BIT(APCR->CR, APCR_CR_VRAM_UPDATE);
+      irq_count = 1;
+    }
+
+    return irq_count;
 }
 
 /*
@@ -220,3 +274,5 @@ static inline void age_voices(struct controller *controller)
     }
   }
 }
+
+

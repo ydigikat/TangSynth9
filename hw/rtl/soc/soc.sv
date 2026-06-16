@@ -27,11 +27,7 @@ module soc #(parameter string B0_MEM_FILE,    // ROM byte files
   output     logic[15:0]  gpo_o,  
   output     logic        trap_o,
   output     logic        trace_o,
-  output     logic[15:0]  debug_o,
-  output     logic        midi_o,
-  input `VAR logic        midi_i
-
-
+  output     logic[15:0]  debug_o
 );
 
 //------------------------------------------------------------------------------
@@ -71,8 +67,8 @@ logic        trap;
 // Interrupts
 //------------------------------------------------------------------------------
 logic[31:0] irq;
-assign irq = 0;
-assign irq[3] = aud_irq_i;
+
+assign irq = {27'h0, 1'b0, 1'b0, 1'b0, 1'b0, aud_irq_i, 1'b0, 1'b0, 1'b0};
 
 //------------------------------------------------------------------------------
 // PicoRV32 RISC V soft core processor 
@@ -85,8 +81,8 @@ picorv32 #(
   .ENABLE_MUL(1),               // these need the rv32im architecture flag
   .BARREL_SHIFTER(1),           // on compiler/linker to support them.
 
-  .ENABLE_IRQ(1),               // Interupts off for time-being.
-  .ENABLE_IRQ_TIMER(0),         // Don't need the timer.
+  .ENABLE_IRQ(1),               // Enable interrupts
+  .ENABLE_IRQ_TIMER(1),         // Enable timer
   .ENABLE_IRQ_QREGS(1),         // Shadow interrupt registers
   .MASKED_IRQ(IRQ_MASK),        // Only irqs 0-4    
 
@@ -133,18 +129,16 @@ assign vram_sel = mem_valid && (mem_addr >= VRAM_ADDR && mem_addr < GPO_ADDR);
 assign gpo_sel =  mem_valid && (mem_addr >= GPO_ADDR && mem_addr < GPO_ADDR + 'h40);
 assign trace_sel =  mem_valid && (mem_addr >= TRACE_ADDR && mem_addr < TRACE_ADDR + 'h40);
 assign pcr_sel = mem_valid && (mem_addr >= PCR_ADDR && mem_addr < PCR_ADDR + 'h40);
-assign midi_sel = mem_valid && (mem_addr >= MIDI_ADDR && mem_addr < MIDI_ADDR + 'h40);
 
 //------------------------------------------------------------------------------
 // Data bus selector
 //------------------------------------------------------------------------------
-assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | pcr_rdy | midi_rdy); 
+assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | pcr_rdy); 
 
 assign mem_rdata = sram_sel ? sram_rdata :                    
                    vram_sel ? vram_rdata : 
                    gpo_sel ? gpo_rdata : 
-                   pcr_sel ? pcr_rdata :
-                   midi_sel ? midi_rdata :
+                   pcr_sel ? pcr_rdata :                   
                    trace_sel ? trace_rdata : 
                    32'h0;
 
@@ -259,23 +253,6 @@ pcr u_pcr(
   .mem_rdata_o(pcr_rdata)
 );
 
-//------------------------------------------------------------------------------
-// MIDI in module - this is just the serial rx, no MIDI parsing done here.
-//------------------------------------------------------------------------------
-logic midi_rdy;
-logic [31:0] midi_rdata;
-
-midi u_midi(
-  .clk_i(clk_i),
-  .rst_ni(rst_ni),
-  .select_i(midi_sel),
-  .midi_i(midi_i),
-  .mem_ready_o(midi_rdy),
-  .mem_addr_i(mem_addr),
-  .mem_wstrb_i(mem_wstrb),
-  .mem_wdata_i(mem_wdata),
-  .mem_rdata_o(midi_rdata)
-);
 
 //------------------------------------------------------------------------------
 // Outputs

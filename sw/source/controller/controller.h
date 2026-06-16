@@ -26,5 +26,6 @@ struct controller
 void controller_init(struct controller *controller);
 void controller_handle_midi(struct controller *controller, struct midi_msg *msg);
 void controller_calculate(struct controller *controller);
+uint8_t controller_execute(struct controller *controller, uint8_t sample_count);
 
 #endif /* __CONTROLLER_H__*/
