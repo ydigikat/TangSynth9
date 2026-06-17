@@ -7,7 +7,7 @@
 module top (
     input `VAR  logic       clk_i,  
     input `VAR  logic       rst_btn_ni,
-//    input `VAR  logic       midi_i,    
+    input `VAR  logic       midi_i,    
     
 
     // IO lines
@@ -61,7 +61,8 @@ module top (
     .gpo_o(gpo),
     .trap_o(trap),
     .trace_o(trace),
-    .debug_o(debug)      
+    .debug_o(debug),
+    .midi_i(midi_i)      
   );
 
   //------------------------------------------------------------------------------

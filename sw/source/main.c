@@ -54,15 +54,16 @@ void handle_irq(uint32_t mask)
   }
 
   if (mask & IRQ_AUDIO)
-  {    
+  {        
     irq_count++;    
   }
 
   if (mask & IRQ_MIDI)
-  {
-    // TODO: Read MIDI register, temporary nop.
-    uint8_t byte = MIDI_STATUS_ACTIVE_SENSE;
-    midi_buffer_write(byte);
+  {    
+    if (midi_rx_ready(MIDI))
+    {
+      midi_buffer_write(midi_read_byte(MIDI));
+    }        
   }  
 }
 

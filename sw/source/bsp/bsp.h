@@ -53,6 +53,12 @@ typedef struct
     __IO uint32_t CR; /* Control register */
 } APCR_t;
 
+typedef struct
+{
+  __IO uint32_t CR;   /* Control register  : [10:0] baud divisor            */
+  __I  uint32_t SR;   /* Status register   : [0] rx_valid, [1] framing err  */
+  __I  uint32_t RD;   /* RX data register  : [7:0] received byte            */
+} MIDI_t;
 
 /* ----------------------------------------------------------------------------
  * Memory Map
@@ -60,6 +66,7 @@ typedef struct
 #define GPO1_BASE (PERIPH_BASE + 0x00UL)
 #define TRACE_BASE (PERIPH_BASE + 0x40UL)
 #define APCR_BASE (PERIPH_BASE + 0x80UL)
+#define MIDI_BASE  (PERIPH_BASE + 0xC0UL)
 
 /* ----------------------------------------------------------------------------
  * Built-in peripheral instances (MMIO)
@@ -67,6 +74,7 @@ typedef struct
 #define GPO1 ((GPO_t *)GPO1_BASE)
 #define TRACE ((TRACE_t *)TRACE_BASE)
 #define APCR ((APCR_t *)APCR_BASE)
+#define MIDI  ((MIDI_t *)MIDI_BASE)
 
 
 /* ----------------------------------------------------------------------------
@@ -157,5 +165,32 @@ static const uint8_t TRACE_DIV = (SYS_FREQ/(115200*16)-1); /*!< 115200 divisor *
 #define APCR_CR_VRAM_UPDATE_Pos (0U)
 #define APCR_CR_VRAM_UPDATE_Msk (0x1UL << APCR_CR_VRAM_UPDATE_Pos)
 #define APCR_CR_VRAM_UPDATE (APCR_CR_VRAM_UPDATE_Msk)   // [0] Update from VRAM
+
+
+/* ----------------------------------------------------------------------------
+ * MIDI Registers
+ * --------------------------------------------------------------------------*/
+
+/* Control register */
+#define MIDI_CR_DIV_Pos     (0U)
+#define MIDI_CR_DIV_Msk     (0x7FFUL << MIDI_CR_DIV_Pos)   /* 0x000007FF */
+#define MIDI_CR_DIV         (MIDI_CR_DIV_Msk)               /* [10:0] baud divisor */
+
+/* Status register */
+#define MIDI_SR_RXRDY_Pos   (0U)
+#define MIDI_SR_RXRDY_Msk   (0x1UL << MIDI_SR_RXRDY_Pos)   /* 0x00000001 */
+#define MIDI_SR_RXRDY       (MIDI_SR_RXRDY_Msk)             /* [0] byte received */
+
+#define MIDI_SR_ERR_Pos     (1U)
+#define MIDI_SR_ERR_Msk     (0x1UL << MIDI_SR_ERR_Pos)     /* 0x00000002 */
+#define MIDI_SR_ERR         (MIDI_SR_ERR_Msk)               /* [1] framing error */
+
+/* RX data register */
+#define MIDI_RD_DAT_Pos     (0U)
+#define MIDI_RD_DAT_Msk     (0xFFUL << MIDI_RD_DAT_Pos)    /* 0x000000FF */
+#define MIDI_RD_DAT         (MIDI_RD_DAT_Msk)               /* [7:0] received byte */
+
+/* MIDI baud: 31250 bps, 16x oversampling.  div = (SYS_FREQ / (31250 * 16)) - 1 */
+static const uint16_t MIDI_DIV = (SYS_FREQ / (31250U * 16U) - 1U);  /* = 47 @ 24 MHz */
 
 #endif /* __BSP_H__ */

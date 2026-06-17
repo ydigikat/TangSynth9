@@ -57,4 +57,28 @@ static inline uint8_t trace_putch(TRACE_t *restrict trace, uint8_t c)
   return TRACE_SUCCESS;
 }
 
+/*----------------------------------------------------------------------------
+ * MIDI Driver
+ * --------------------------------------------------------------------------*/
+
+static inline void midi_init(MIDI_t *restrict midi)
+{
+  MODIFY_REG(midi->CR, MIDI_CR_DIV, _VAL2FLD(MIDI_CR_DIV, MIDI_DIV));
+}
+
+static inline bool midi_rx_ready(MIDI_t *restrict midi)
+{
+  return READ_BIT(midi->SR, MIDI_SR_RXRDY);
+}
+
+static inline bool midi_rx_error(MIDI_t *restrict midi)
+{
+  return READ_BIT(midi->SR, MIDI_SR_ERR);
+}
+
+static inline uint8_t midi_read_byte(MIDI_t *restrict midi)
+{
+  return (uint8_t)_FLD2VAL(MIDI_RD_DAT, READ_REG(midi->RD));
+}
+
 #endif

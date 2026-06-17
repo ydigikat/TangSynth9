@@ -173,6 +173,8 @@ set RTL_FILES [list \
     "$RTL_DIR/soc/buffer.sv" \
     "$RTL_DIR/soc/trace.sv" \
     "$RTL_DIR/soc/vram.sv" \
+    "$RTL_DIR/soc/serial_rx.sv" \
+    "$RTL_DIR/soc/midi.sv" \
     "$RTL_DIR/audio/i2s_tx.sv" \
     "$RTL_DIR/audio/test_tone.sv" \
     "$RTL_DIR/audio/aud_pipeline.sv" 

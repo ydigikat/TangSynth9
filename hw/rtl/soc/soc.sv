@@ -27,7 +27,8 @@ module soc #(parameter string B0_MEM_FILE,    // ROM byte files
   output     logic[15:0]  gpo_o,  
   output     logic        trap_o,
   output     logic        trace_o,
-  output     logic[15:0]  debug_o
+  output     logic[15:0]  debug_o,
+  input `VAR logic        midi_i
 );
 
 //------------------------------------------------------------------------------
@@ -67,8 +68,9 @@ logic        trap;
 // Interrupts
 //------------------------------------------------------------------------------
 logic[31:0] irq;
+logic midi_irq;     // Generated locally by MIDI module.
 
-assign irq = {27'h0, 1'b0, 1'b0, 1'b0, 1'b0, aud_irq_i, 1'b0, 1'b0, 1'b0};
+assign irq = {27'h0, 1'b0, 1'b0, 1'b0, midi_irq, aud_irq_i, 1'b0, 1'b0, 1'b0};
 
 //------------------------------------------------------------------------------
 // PicoRV32 RISC V soft core processor 
@@ -129,17 +131,20 @@ assign vram_sel = mem_valid && (mem_addr >= VRAM_ADDR && mem_addr < GPO_ADDR);
 assign gpo_sel =  mem_valid && (mem_addr >= GPO_ADDR && mem_addr < GPO_ADDR + 'h40);
 assign trace_sel =  mem_valid && (mem_addr >= TRACE_ADDR && mem_addr < TRACE_ADDR + 'h40);
 assign pcr_sel = mem_valid && (mem_addr >= PCR_ADDR && mem_addr < PCR_ADDR + 'h40);
+assign midi_sel = mem_valid && (mem_addr >= MIDI_ADDR && mem_addr < MIDI_ADDR + 'h40);
+
 
 //------------------------------------------------------------------------------
 // Data bus selector
 //------------------------------------------------------------------------------
-assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | pcr_rdy); 
+assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | pcr_rdy | midi_rdy); 
 
 assign mem_rdata = sram_sel ? sram_rdata :                    
                    vram_sel ? vram_rdata : 
                    gpo_sel ? gpo_rdata : 
                    pcr_sel ? pcr_rdata :                   
                    trace_sel ? trace_rdata : 
+                   midi_sel ? midi_rdata : 
                    32'h0;
 
 
@@ -214,7 +219,7 @@ gpo u_gpo(
 );
 
 //------------------------------------------------------------------------------
-// Trace module.  This is a UART peripheral which is wired via FTDI to provide
+// Trace module.  This is a serial TX peripheral which is wired via FTDI to provide
 //                printf tracing over USB. 
 //------------------------------------------------------------------------------
 logic trace_rdy, trace;
@@ -253,10 +258,32 @@ pcr u_pcr(
   .mem_rdata_o(pcr_rdata)
 );
 
+//------------------------------------------------------------------------------
+// MIDI module.  This is a serial RX module wired via a serial pin to a MIDI opto
+//               coupler circuit.
+//------------------------------------------------------------------------------
+logic midi_rdy;
+logic [31:0] midi_rdata;
+
+midi u_midi(
+  .clk_i(clk_i),
+  .rst_ni(rst_ni),
+  .select_i(midi_sel),
+  .rx_i(midi_i),
+  .irq_o(midi_irq),
+  .mem_ready_o(midi_rdy),
+  .mem_addr_i(mem_addr),
+  .mem_wstrb_i(mem_wstrb),
+  .mem_wdata_i(mem_wdata),
+  .mem_rdata_o(midi_rdata)
+);
+
+
 
 //------------------------------------------------------------------------------
 // Outputs
 //------------------------------------------------------------------------------
+
 assign pipe_vram_data_o = pipe_vram_data;
 assign pipe_vram_valid_o = pipe_vram_valid;
 assign pipe_vram_update_o = pipe_vram_update;
@@ -267,14 +294,7 @@ assign trap_o = trap;
 
 
 // Debugging
-assign debug_o[0] = irq[3];
+assign debug_o[0] = irq[4];
 assign debug_o[15:1] = 0;
-// assign debug_o[1] = gpo_sel;
-// assign debug_o[2] = tick_sel;
-// assign debug_o[3] = trace_sel;
-// assign debug_o[4] = trace_o;
-// assign debug_o[5] = mem_instr;
-
-
 endmodule
 `default_nettype wire
