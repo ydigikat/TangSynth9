@@ -107,6 +107,7 @@ uint8_t controller_execute(struct controller *controller, uint8_t irq_count)
         struct midi_msg *msg = midi_parse(&midi_in, byte);
         if (msg != NULL)
         {
+          trace_printf(TRACE,"MIDI message: %x, %x, %x\n",msg->data[0], msg->data[1], msg->data[2]);
           controller_handle_midi(controller, msg);
         }
       }

@@ -40,31 +40,35 @@ int main(void)
 }
 
 /*
-* Interrupt service routine.  Note that the mask can have multiple
-* IRQ bits so there is an implied priority in handling them 
-* from the order of the IRQ checks in the function.
-*/
+ * Interrupt service routine.  Note that the mask can have multiple
+ * IRQ bits so there is an implied priority in handling them
+ * from the order of the IRQ checks in the function.
+ */
 void handle_irq(uint32_t mask)
 {
   if (mask & IRQ_TIMER)
   {
     blink = !blink;
-    blink ? gpo_set_pin(GPO1,GPO_BSR_3) : gpo_clear_pin(GPO1,GPO_BSR_3);
+    blink ? gpo_set_pin(GPO1, GPO_BSR_3) : gpo_clear_pin(GPO1, GPO_BSR_3);
     reload_timer(TIMER_COUNT);
   }
 
   if (mask & IRQ_AUDIO)
-  {        
-    irq_count++;    
+  {
+    irq_count++;
   }
 
   if (mask & IRQ_MIDI)
-  {    
+  {
     if (midi_rx_ready(MIDI))
     {
-      midi_buffer_write(midi_read_byte(MIDI));
-    }        
-  }  
+      uint8_t byte = midi_read_byte(MIDI);
+      if (byte != MIDI_STATUS_ACTIVE_SENSE)
+      {
+        midi_buffer_write(midi_read_byte(MIDI));
+      }
+    }
+  }
 }
 
 // Reload the countdown timer (IRQ 0)
