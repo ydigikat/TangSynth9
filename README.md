@@ -50,6 +50,7 @@ The SOC provides a set of design specific MMIO modules:
 | ------ | ------- |
 | SRAM   | CPU SRAM (BRAM) |
 | VRAM   | Share Voice RAM |
+| APCR | Audio pipeline control |
 | TRACE  | Serial-tx module (used only for debug/trace) |
 | MIDI   | Serial-rx module (used only for MIDI in) |
 | GPO    | General purpose output (primarily on-board LED indicators)|
