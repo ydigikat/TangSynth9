@@ -88,3 +88,8 @@ This error is within tolerance for most DACs and should be corrected for by the 
 | FCW  | 0-Fs/2 | uint32_t | Derivative of Phase Acc width |
 | Control Rate Signals   | 0.0-1.0 | Q1.15 | Unipolar normalised |
 | User Parameters | 0-2^7 | uint8_t | MIDI CC (7-bit) values |
+
+Much of the code is ported from my MCU based template. This uses normalised floating point for all calculations as well as several math functions and employs a floating point unit.  The picorv32 has no floating point or math support at all.  
+
+Rather than create fixed point math functions (or approximations) I use Python to generate discrete lookup tables.  I sometimes use linear interpolation but continuous values are not musically important for the majority of synthesisers I build.
+

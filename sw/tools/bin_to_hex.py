@@ -2,16 +2,15 @@
 #-------------------------------------------------------------------------------
 # Jason Wilden 2025
 #-------------------------------------------------------------------------------
-# Split binary firmware into byte-wise hex files for BSRAM initialization
-# Each BSRAM block holds one byte of each 32-bit instruction.
+# Splits a 32-bit word binary file into 4 separate hex files to initialise the
+# set of BRAM blocks used as SRAM in the FPGA:
+#
+# BRAM Width = 1 byte
+# BRAM Depth =  <target words>
 #-------------------------------------------------------------------------------
-
 import sys
 import os
 
-# Splits a 32-bit word binary file into 4 separate hex files each holding 1 byte
-# of the word.  These are used to initialise ROM (BSRAM) memory in the FPGA, 
-# target_words is the size of the BSRAM block.
 def split_binary(bin_file, target_words):
     
     if not os.path.exists(bin_file):

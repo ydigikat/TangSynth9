@@ -2,22 +2,12 @@
 # ------------------------------------------------------------------------------
 # (c) Jason Wilden, 2026
 # ------------------------------------------------------------------------------
-
-"""
-This script generates tables used by the envelope generator in Q1.15 fixed
-decimal format.
-
-The picorv32 has no FPU an no math functions.  These LUT avoids porting exp
-and log functions to fixed point.  
-
-The coefficients are for Nigel Redom's envelope generator algorithm and are
-taken from my MCU floating point envelope generator which implements a 
-block based variation.  
-
-THe output is ready for direct pasting into luts.h.
-------------------------------------------------------------------------------
-"""
-
+# This script generates tables used by the envelope generator in Q1.15 fixed
+# decimal format.
+#
+# The picorv32 has no FPU an no math functions.  These LUT avoids porting exp
+# and log functions to fixed point.  
+# ------------------------------------------------------------------------------
 import math
 
 SAMPLE_RATE = 46875.0       # Actual Fs (including any error)
