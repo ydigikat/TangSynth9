@@ -18,7 +18,7 @@ It is a SOC implementation comprising:
   - Audio mixing (voice summing)
   - I2S output
 
-The Tang Nano 9K hosts the GW1NR-9 which is a SIP FPGA:
+The Tang Nano 9K hosts the GW1NR-9 which is a SIP (FPGA & PSRAM)
 - 9K LUTs (approx)
 - 468K BRAM
 - 20 18x18 multipliers (DSP)
@@ -34,13 +34,13 @@ The Tang Nano 9K hosts the GW1NR-9 which is a SIP FPGA:
 
 The SOC divides the functionality into a control-plane, managed by the CPU, and a data plane which is a pure RTL pipeline.
 
-The MCU handles the more complicated and slower rate logic, concerned with voice allocation, parameters and MIDI parsing.
+The MCU handles the more complicated and slower rate logic, concerned with voice allocation, control rate signals (modulation), parameters and MIDI parsing.
 
 The RTL data-plane handles the voice DSP and is independent from the MCU.
 
 Communication uses the audio-interrupt from the I2S peripheral which signals to the MCU that data updates can be safely made to the voice configuration registers (timed between samples to avoid glitches).
 
-Data updates are made using shared memory (VRAM).  The audio interrupt ISR uses a shared control register (PCR) to indicate when the shared data can be read.
+Data updates are made using shared memory (VRAM).  The MCU audio interrupt ISR signals to the pipeline via the audio pipeline control register (APCR) to indicate when the shared data can be read.
 
 This completely decouples the audio pipeline and MCU.
 
@@ -50,6 +50,7 @@ The SOC provides a set of design specific MMIO modules:
 | ------ | ------- |
 | SRAM   | CPU SRAM (BRAM) |
 | VRAM   | Share Voice RAM |
+| APCR | Audio pipeline control |
 | TRACE  | Serial-tx module (used only for debug/trace) |
 | MIDI   | Serial-rx module (used only for MIDI in) |
 | GPO    | General purpose output (primarily on-board LED indicators)|
