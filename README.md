@@ -18,7 +18,7 @@ It is a SOC implementation comprising:
   - Audio mixing (voice summing)
   - I2S output
 
-The Tang Nano 9K hosts the GW1NR-9 which is a SIP FPGA:
+The Tang Nano 9K hosts the GW1NR-9 which is a SIP (FPGA & PSRAM)
 - 9K LUTs (approx)
 - 468K BRAM
 - 20 18x18 multipliers (DSP)
