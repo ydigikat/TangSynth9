@@ -34,7 +34,7 @@ IO_LOC "rst_btn_ni" 4; IO_PORT "rst_btn_ni" PULL_MODE=UP;
 IO_LOC "ftdi_o" 17;
 
 // MIDI input
-// IO_LOC "midi_i" 72;
+IO_LOC "midi_i" 72;
 
 // Logic analyser debug pins
 IO_LOC "d_o[0]" 38;

@@ -9,10 +9,10 @@ module aud_pipeline(
   input `VAR  logic   rst_ni,
 
   // Voice RAM
-  output      logic[7:0]  vram_addr_o,
-  input `VAR  logic[31:0] vram_data_i,
-  input `VAR  logic       vram_valid_i,
-  input `VAR  logic       vram_update_i,
+  output      logic[7:0]  vram_addr_o,    // Address of data to fetch
+  input `VAR  logic[31:0] vram_data_i,    // VRAM data 
+  input `VAR  logic       vram_valid_i,   // CPU is not writing
+  input `VAR  logic       vram_update_i,  // Update is required on next sample
   
   // Audio interrupt out
   output      logic   irq_o,
@@ -23,11 +23,14 @@ module aud_pipeline(
   output      logic   aud_sda_o
 );
 
-assign vram_addr_o = 8'b0;
+logic update_reqd;
+
 
 //------------------------------------------------------------------------------
 // Audio pipeline fans out into 4 voices
 //------------------------------------------------------------------------------
+
+
 
 
 
@@ -71,7 +74,6 @@ test_tone tt
   .sample_req_i(req),
   .sample_o({left,right})
 );
-
 
 
 //------------------------------------------------------------------------------

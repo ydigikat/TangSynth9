@@ -6,8 +6,7 @@
 /* ----------------------------------------------------------------------------
  * Trace Driver
  * --------------------------------------------------------------------------*/
-
-static inline void putchar_blocking(TRACE_t *restrict trace, char c)
+static void putchar_blocking(TRACE_t *restrict trace, char c)
 {
   trace_putch(trace, c);
 }

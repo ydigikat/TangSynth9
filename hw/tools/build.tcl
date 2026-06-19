@@ -167,7 +167,7 @@ set RTL_FILES [list \
     "$RTL_DIR/soc/soc.sv" \
     "$RTL_DIR/soc/sram.sv" \
     "$RTL_DIR/soc/gpo.sv" \
-    "$RTL_DIR/soc/pcr.sv" \
+    "$RTL_DIR/soc/apcr.sv" \
     "$RTL_DIR/soc/serial_tx.sv" \
     "$RTL_DIR/soc/sram_block.sv" \
     "$RTL_DIR/soc/buffer.sv" \
@@ -240,6 +240,13 @@ foreach file $RTL_FILES {
 # Build
 puts "## Building"
 run all
+
+# Cleaned output
+catch {exec grep -v "picorv32.v" $IMPL_DIR/gwsynthesis/${DESIGN}.log} filtered_warns
+puts "=================================================================="
+puts $filtered_warns
+puts "=================================================================="
+
 parse_reports
 
 # Optional programming step
@@ -256,6 +263,10 @@ if {$do_program || $do_flash} {
 } else {
     puts "## Programming skipped (use -program or -flash to enable)"
 }
+
+
+
+
 
 # All done.
 puts "## Completed."

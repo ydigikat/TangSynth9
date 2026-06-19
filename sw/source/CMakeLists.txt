@@ -13,7 +13,6 @@ set(BSP_DIR ${SRC_DIR}/bsp)
 # Main application
 set(SRCS_APP
   ${SRC_DIR}/main.c 
-
   ${SRC_DIR}/controller/controller.c 
   ${SRC_DIR}/controller/midi.c 
   ${SRC_DIR}/controller/voice.c 
@@ -21,7 +20,10 @@ set(SRCS_APP
 )
 
 set(INCL_APP ${SRC_DIR} ${SRC_DIR}/controller)
-set(DEFS_APP $<$<CONFIG:DEBUG>: DEBUG>)
+set(DEFS_APP 
+      $<$<CONFIG:DEBUG>: DEBUG>       
+      TRACE_ENABLED
+)
 
 # Size of the BSRAM in words on target FPGA.
 # 16K Bytes = 2048 Words

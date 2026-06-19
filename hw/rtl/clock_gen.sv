@@ -36,13 +36,16 @@ module clock_gen (
       .DEVICE("GW1NR-9C")
   ) u_pll (
       .CLKIN(clk_i),
-      .CLKOUT(clk),            
+      .CLKOUT(clk),           
       .LOCK(pll_locked),
+      .CLKOUTP(),
+      .CLKOUTD(),
+      .CLKOUTD3(),
 
       // Unused      
       .RESET(1'b0),
       .RESET_P(1'b0),
-      .CLKFB(1'b0),
+      .CLKFB(1'b0),      
       .FBDSEL({1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0}),
       .IDSEL({1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0}),
       .ODSEL({1'b0, 1'b0, 1'b0, 1'b0, 1'b0, 1'b0}),

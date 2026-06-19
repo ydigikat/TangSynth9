@@ -30,40 +30,43 @@ void controller_init(struct controller *controller)
     voice_update(&controller->voice[i]);
   }
 
-  trace_printf(TRACE, "Controller:Initialised. MIDI channel %x\n", controller->midi_channel, 0, 0);
+  TRACE_PRINTF("Controller:Initialised. MIDI channel %x\n", controller->midi_channel, 0, 0);
 }
 
 /*
-* Dispatch MIDI messages
-*/
+ * Dispatch MIDI messages
+ */
 void controller_handle_midi(struct controller *controller, struct midi_msg *msg)
 {
+  TRACE_ASSERT(controller);
+  TRACE_ASSERT(msg);
+
   switch (msg->data[0])
   {
   case MIDI_STATUS_NOTE_ON:
     if (msg->data[2] > 0)
     {
-      trace_printf(TRACE,"Controller:Note On %x, %x\n", msg->data[1], msg->data[2],0);      
-      note_on(controller,msg->data[1], msg->data[2]);
+      TRACE_PRINTF("Controller:Note On %x, %x\n", msg->data[1], msg->data[2], 0);
+      note_on(controller, msg->data[1], msg->data[2]);
     }
     else
     {
       /* Controllers can send a NOTE_ON with velocity 0 instead of NOTE_OFF */
-      trace_printf(TRACE,"Controller:Note On (zero velocity) %x\n", msg->data[1],0,0);            
-      note_off(controller,msg->data[1]);
+      TRACE_PRINTF("Controller:Note On (zero velocity) %x\n", msg->data[1], 0, 0);
+      note_off(controller, msg->data[1]);
     }
-    
+
     break;
 
   case MIDI_STATUS_NOTE_OFF:
-    trace_printf(TRACE,"Controller:Note Off (zero velocity) %x\n", msg->data[1],0,0);                
-    note_off(controller,msg->data[1]);
+    TRACE_PRINTF("Controller:Note Off (zero velocity) %x\n", msg->data[1], 0, 0);
+    note_off(controller, msg->data[1]);
     break;
 
   case MIDI_STATUS_CONTROL_CHANGE:
-  {    
-    trace_printf(TRACE,"Controller: %d, %d\n", msg->data[1],msg->data[2],0);            
-    
+  {
+    TRACE_PRINTF("Controller: %d, %d\n", msg->data[1], msg->data[2], 0);
+
     update_voice_params(controller);
   }
   break;
@@ -71,11 +74,11 @@ void controller_handle_midi(struct controller *controller, struct midi_msg *msg)
 }
 
 /*
-* Calls the voices to update their internal calculations for modulators.
-*/
+ * Calls the voices to update their internal calculations for modulators.
+ */
 void controller_calculate(struct controller *controller)
 {
-  #pragma GCC unroll 8
+#pragma GCC unroll 8
   for (int i = 0; i < MAX_VOICES; i++)
   {
     voice_calculate(&controller->voice[i]);
@@ -83,53 +86,53 @@ void controller_calculate(struct controller *controller)
 }
 
 /*
-* Executes the control-rate calculation cycle by counting the interrupts.
-*/
+ * Executes the control-rate calculation cycle by counting the interrupts.
+ */
 uint8_t controller_execute(struct controller *controller, uint8_t irq_count)
-{ 
-    
-    if (irq_count == 1U)
-    {
-      /*
-      * On the first interrupt of a cycle we:
-      *
-      * - set the APCR register to stop the audio pipeline updating from VRAM
-      * - parse any buffered MIDI events
-      * - process all the voice calculations (modulators & lifecycle)
-      * - copy the new calculated values into VRAM.
-      */
+{
+  TRACE_ASSERT(controller);
 
-      CLEAR_BIT(APCR->CR, APCR_CR_VRAM_UPDATE);      
-       
-      uint8_t byte;
-      while (midi_buffer_read(&byte))
+  if (irq_count == 1U)
+  {
+    /*
+     * On the first interrupt of a cycle we:
+     *
+     * - set the APCR register to stop the audio pipeline updating from VRAM
+     * - parse any buffered MIDI events
+     * - process all the voice calculations (modulators & lifecycle)
+     * - copy the new calculated values into VRAM.
+     */
+
+    CLEAR_BIT(APCR->CR, APCR_CR_VRAM_UPDATE);
+
+    uint8_t byte;
+    while (midi_buffer_read(&byte))
+    {
+      struct midi_msg *msg = midi_parse(&midi_in, byte);
+      if (msg != NULL)
       {
-        struct midi_msg *msg = midi_parse(&midi_in, byte);
-        if (msg != NULL)
-        {
-          trace_printf(TRACE,"MIDI message: %x, %x, %x\n",msg->data[0], msg->data[1], msg->data[2]);
-          controller_handle_midi(controller, msg);
-        }
+        TRACE_PRINTF("MIDI message: %x, %x, %x\n", msg->data[0], msg->data[1], msg->data[2]);
+        controller_handle_midi(controller, msg);
       }
-      
-      controller_calculate(controller);
-      
-      // TODO: Copy to VRAM here
+        }
 
-    } 
-    else if (irq_count == LAST_IRQ_IN_CYCLE)
-    {
-      /*
-       * On the last interrupt of the cycle we:
-       *
-       * - set the APCR register so the pipeline updates before next sample
-       * - reset the sample counter. 
-       */      
-      SET_BIT(APCR->CR, APCR_CR_VRAM_UPDATE);
-      irq_count = 1;
-    }
+    controller_calculate(controller);
 
-    return irq_count;
+    // TODO: Copy to VRAM here
+  }
+  else if (irq_count == LAST_IRQ_IN_CYCLE)
+  {
+    /*
+     * On the last interrupt of the cycle we:
+     *
+     * - set the APCR register so the pipeline updates before next sample
+     * - reset the sample counter.
+     */
+    SET_BIT(APCR->CR, APCR_CR_VRAM_UPDATE);
+    irq_count = 1;
+  }
+
+  return irq_count;
 }
 
 /*
@@ -203,9 +206,9 @@ void update_voice_params(struct controller *controller)
   }
 }
 
-/* 
-* Find an idle voice ready for immediate use 
-*/
+/*
+ * Find an idle voice ready for immediate use
+ */
 static inline struct voice *find_free_voice(struct controller *controller)
 {
   struct voice *free_voice = NULL;
@@ -275,5 +278,3 @@ static inline void age_voices(struct controller *controller)
     }
   }
 }
-
-

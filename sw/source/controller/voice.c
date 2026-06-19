@@ -3,6 +3,7 @@
  */
 
 #include "voice.h"
+#include "drv.h"
 
 enum VOICE_EVENT
 {
@@ -54,7 +55,6 @@ void voice_calculate(struct voice *voice)
   voice_state_handlers[voice->state](voice);
 }
 
-
 /*
  * Translates a MIDI note_on event into a VOICE_EVENT.
  *
@@ -83,6 +83,47 @@ void voice_calculate(struct voice *voice)
  */
 void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity)
 {
+  TRACE_ASSERT(voice);
+
+  switch (voice->state)
+  {
+  case VOICE_IDLE:
+
+    TRACE_PRINTF("Note On: Request VOICE_EVENT_START [voice %d]\n", voice->idx,0,0);
+
+    voice->note = midi_note;
+    voice->vel = midi_velocity;
+
+    // TODO: Fix
+    // voice->pitch = MIDI_FREQ_TABLE[midi_note];
+    voice->event_flags |= VOICE_EVENT_START;
+    voice->state = VOICE_ACTIVE;
+    break;
+
+  case VOICE_ACTIVE:
+    if (voice->note == midi_note)
+    {
+      TRACE_PRINTF("Note On: Request VOICE_EVENT_RETRIGGER [voice %d]\n", voice->idx,0,0);
+
+      voice->vel = midi_velocity;
+      voice->event_flags |= VOICE_EVENT_RETRIGGER;
+      return;
+    }
+
+    TRACE_PRINTF("Note On: Request VOICE_EVENT_STEAL_RTZ [voice %d]\n", voice->idx, 0, 0);
+
+    // TODO: Fix
+    // voice->steal_pitch = MIDI_FREQ_TABLE[midi_note];
+    voice->steal_note = midi_note;
+    voice->steal_vel = midi_velocity;
+    voice->state = VOICE_STEALING;
+    voice->event_flags |= VOICE_EVENT_STEAL_RTZ;
+    break;
+
+  case VOICE_STEALING:
+    TRACE_ASSERT(false); /* this should not happen */
+    break;
+  }
 }
 
 /*
@@ -115,7 +156,6 @@ void voice_note_off(struct voice *voice, uint8_t midi_note)
 void voice_update(struct voice *voice)
 {
 }
-
 
 /*
  * Handles the VOICE_IDLE state
@@ -176,23 +216,20 @@ static void voice_state_stealing(struct voice *voice)
 {
 }
 
-
 /*
-* Initialises the state of the modulators. 
-*/
+ * Initialises the state of the modulators.
+ */
 static void voice_init_modulators(struct voice *voice)
 {
-
 }
 
 /*
-* Calculates the current modulator values.
-*
-* This is called by the voice_render function.
-*/
+ * Calculates the current modulator values.
+ *
+ * This is called by the voice_render function.
+ */
 static void voice_calculate_modulators(struct voice *voice)
 {
-
 }
 
 /*
@@ -213,5 +250,4 @@ static void voice_calculate_modulators(struct voice *voice)
  */
 static void voice_update_modulators(struct voice *voice)
 {
-
 }

@@ -28,7 +28,7 @@ typedef enum logic [2:0]
 uart_state_t state, state_d;
 
 //------------------------------------------------------------------------------
-// Input synchroniser  (2-FF metastability chain)
+// Double flop sync
 //------------------------------------------------------------------------------
 logic rx_s0, rx_s1;
 
@@ -76,8 +76,6 @@ end
 
 //------------------------------------------------------------------------------
 // Sample rate divider
-// Runs continuously so the baud clock is always available.
-// Resets on start-bit detection to align sample windows to the incoming byte.
 //------------------------------------------------------------------------------
 logic sample_inc;
 assign sample_inc   = (sample_div == div_i);
@@ -107,32 +105,28 @@ always_comb begin
       end
     end
 
-    // Start bit — wait for the midpoint (sample 8) then verify line is still low.
-    // Resampling at centre avoids committing to a glitch.
+    // Start bit — wait for the midpoint (sample 8)
     Start: begin
       if (sample_inc) begin
         if (sample_cnt == 4'd7) begin
           if (!rx_s1) begin
-            // Valid start bit confirmed — move to data, reset for bit windows
+            // Valid start bit confirmed — move to data
             state_d      = Data;
             sample_cnt_d = 4'd0;
             bit_cnt_d    = 3'd0;
-          end else begin
-            // Glitch — false start, back to idle
+          end else begin            
             state_d = Idle;
           end
         end else begin
           sample_cnt_d = sample_cnt + 4'd1;
         end
       end
-    end
-
-    // Data bits — sample at midpoint of each bit window (sample 8), shift in LSB first.
+    end    
     Data: begin
       if (sample_inc) begin
         if (sample_cnt == 4'd15) begin
           sample_cnt_d = 4'd0;
-          data_d       = {rx_s1, data[7:1]};   // Shift right, MSB from line
+          data_d       = {rx_s1, data[7:1]};   // Shift right, MSB from line in
           if (bit_cnt == 3'd7) begin
             state_d = Stop;
           end else begin
@@ -144,12 +138,12 @@ always_comb begin
       end
     end
 
-    // Stop bit — sample at midpoint.  Line must be high; flag framing error if not.
+    // Stop bit line must be high framing error if not.
     Stop: begin
       if (sample_inc) begin
         if (sample_cnt == 4'd7) begin
           rx_valid_d   = rx_s1;          // Valid only if stop bit is high
-          rx_error_d   = !rx_s1;         // Framing error if low
+          rx_error_d   = !rx_s1;         // Framing error if not
           state_d      = Idle;
         end else begin
           sample_cnt_d = sample_cnt + 4'd1;

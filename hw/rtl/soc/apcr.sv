@@ -4,7 +4,7 @@
 `default_nettype none
 `include "defs.svh"
 
-module pcr(
+module apcr(
   input `VAR  logic         clk_i,
   input `VAR  logic         rst_ni,
 

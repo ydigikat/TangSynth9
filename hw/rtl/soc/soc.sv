@@ -48,7 +48,7 @@ localparam int SRAM_ADDR = 32'h0000_0000;
 localparam int VRAM_ADDR = 32'h0001_0000;
 localparam int GPO_ADDR = 32'h8000_0000;
 localparam int TRACE_ADDR =  32'h8000_0040;
-localparam int PCR_ADDR =  32'h8000_0080;
+localparam int APCR_ADDR =  32'h8000_0080;
 localparam int MIDI_ADDR = 32'h8000_00C0;
 
 //------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ picorv32 #(
   .mem_wstrb(mem_wstrb),
   .mem_rdata(mem_rdata),
   .irq(irq),
-  .eoi(),
+  .eoi(),  
 
    // Unused (reduce warning noise)
   .trace_valid(),
@@ -116,7 +116,12 @@ picorv32 #(
   .pcpi_wr(1'b0),
   .pcpi_rd(32'h0),
   .pcpi_wait(1'b0),
-  .pcpi_ready(1'b0)
+  .pcpi_ready(1'b0),
+  .mem_la_read   (),
+  .mem_la_write  (),
+  .mem_la_addr   (),
+  .mem_la_wdata  (),
+  .mem_la_wstrb  ()
 );  
 
 
@@ -124,25 +129,25 @@ picorv32 #(
 //------------------------------------------------------------------------------
 // Address decoder 
 //------------------------------------------------------------------------------
-logic sram_sel, tick_sel, gpo_sel, trace_sel, vram_sel, pcr_sel, midi_sel;
+logic sram_sel, tick_sel, gpo_sel, trace_sel, vram_sel, apcr_sel, midi_sel;
 
 assign sram_sel = mem_valid && (mem_addr  < SRAM_SIZE);  
 assign vram_sel = mem_valid && (mem_addr >= VRAM_ADDR && mem_addr < GPO_ADDR);
 assign gpo_sel =  mem_valid && (mem_addr >= GPO_ADDR && mem_addr < GPO_ADDR + 'h40);
 assign trace_sel =  mem_valid && (mem_addr >= TRACE_ADDR && mem_addr < TRACE_ADDR + 'h40);
-assign pcr_sel = mem_valid && (mem_addr >= PCR_ADDR && mem_addr < PCR_ADDR + 'h40);
+assign apcr_sel = mem_valid && (mem_addr >= APCR_ADDR && mem_addr < APCR_ADDR + 'h40);
 assign midi_sel = mem_valid && (mem_addr >= MIDI_ADDR && mem_addr < MIDI_ADDR + 'h40);
 
 
 //------------------------------------------------------------------------------
 // Data bus selector
 //------------------------------------------------------------------------------
-assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | pcr_rdy | midi_rdy); 
+assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | apcr_rdy | midi_rdy); 
 
 assign mem_rdata = sram_sel ? sram_rdata :                    
                    vram_sel ? vram_rdata : 
                    gpo_sel ? gpo_rdata : 
-                   pcr_sel ? pcr_rdata :                   
+                   apcr_sel ? apcr_rdata :                   
                    trace_sel ? trace_rdata : 
                    midi_sel ? midi_rdata : 
                    32'h0;
@@ -199,7 +204,7 @@ vram u_vram(
 
 //------------------------------------------------------------------------------
 // GPO (general purpose output) module, the pins these outputs are assigned to 
-// is set in the top module, the firmware can assign a value but not the pins to
+// is set in the top module, the firmware can assign  value but not the pins to
 // which they are assigned.
 //------------------------------------------------------------------------------
 logic gpo_rdy;
@@ -239,23 +244,23 @@ trace u_trace(
 
 
 //------------------------------------------------------------------------------
-// General purpose control register module.  
-// [0] = Pipeline to update from VRAM
+// Audio pipeline control register module.  
+// [0] = Pipeline should update from VRAM on next sample
 // [15:1] unassigned.
 //------------------------------------------------------------------------------
-logic pcr_rdy, pipe_vram_update;
-logic [31:0] pcr_rdata;
+logic apcr_rdy, pipe_vram_update;
+logic [31:0] apcr_rdata;
 
-pcr u_pcr(
+apcr u_apcr(
   .clk_i(clk_i),
   .rst_ni(rst_ni),
-  .select_i(pcr_sel),
+  .select_i(apcr_sel),
   .vram_update_o(pipe_vram_update),
-  .mem_ready_o(pcr_rdy),
+  .mem_ready_o(apcr_rdy),
   .mem_addr_i(mem_addr),
   .mem_wstrb_i(mem_wstrb),
   .mem_wdata_i(mem_wdata),
-  .mem_rdata_o(pcr_rdata)
+  .mem_rdata_o(apcr_rdata)
 );
 
 //------------------------------------------------------------------------------

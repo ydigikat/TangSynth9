@@ -21,14 +21,12 @@ static inline uint32_t reload_timer(uint32_t val);
  * Firmware entry point
  */
 int main(void)
-{
-  bool led = true;
-
-  trace_init(TRACE);
-  trace_print(TRACE, "=== TangSynth9 Template ===\n");
+{  
+  trace_init(TRACE);  
+  reload_timer(TIMER_COUNT);
   controller_init(&controller);
 
-  reload_timer(TIMER_COUNT);
+  TRACE_PRINT("=== TangSynth9 template initialised ===\n");  
 
   while (1)
   {
@@ -71,7 +69,9 @@ void handle_irq(uint32_t mask)
   }
 }
 
-// Reload the countdown timer (IRQ 0)
+/*
+* Reload one-shot IRQ countdown timer - used to flash LED for heartbeat.
+*/
 static inline uint32_t reload_timer(uint32_t val)
 {
   uint32_t retval;

@@ -6,6 +6,8 @@
 
 #include "bsp.h"
 
+
+
 /* ----------------------------------------------------------------------------
  * GPO Driver
  * --------------------------------------------------------------------------*/
@@ -22,6 +24,28 @@ static inline void gpo_clear_pin(GPO_t *restrict gpo, uint32_t pin_mask)
 /* ----------------------------------------------------------------------------
  * Trace Driver
  * --------------------------------------------------------------------------*/
+
+ #ifdef TRACE_ENABLED
+#define TRACE_ASSERT(expr)                                                                                 \
+  do                                                                                                       \
+  {                                                                                                        \
+    if (!expr)                                                                                             \
+    {                                                                                                      \
+      trace_printf(TRACE, "ASSERTION FAILED: %s, function %s,  line %d", (uint32_t)__FILE__, (uint32_t)__FUNCTION__, __LINE__); \
+      while (1)                                                                                            \
+        ;                                                                                                  \
+    }                                                                                                      \
+  } while (0)
+
+#define TRACE_PRINT(s) trace_print(TRACE, s)
+#define TRACE_PRINTF(fmt, ...) trace_printf(TRACE, fmt, ##__VA_ARGS__)
+#else
+#define TRACE_ASSERT(expr)
+#define TRACE_PRINT(s)
+#define TRACE_PRINTF(fmt, ...)
+#endif /* TRACE_ENABLED */
+
+
 void trace_print(TRACE_t *restrict trace, const char *str);
 void trace_printf(TRACE_t *restrict trace, const char *fmt, uint32_t arg1, uint32_t arg2, uint32_t arg3);
 
