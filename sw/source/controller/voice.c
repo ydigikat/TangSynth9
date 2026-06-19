@@ -25,8 +25,10 @@ static void voice_state_idle(struct voice *voice);
 static void voice_state_active(struct voice *voice);
 static void voice_state_stealing(struct voice *voice);
 
-/* Modulator updates */
+/* Modulators */
 static void voice_init_modulators(struct voice *voice);
+static void voice_start_modulators(struct voice *voice);
+static void voice_stop_modulators(struct voice *voice);
 static void voice_calculate_modulators(struct voice *voice);
 static void voice_update_modulators(struct voice *voice);
 
@@ -98,7 +100,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
     voice->note = midi_note;
     voice->vel = midi_velocity;
 
-    // TODO: Fix
+    // TODO: NYI
     // voice->pitch = MIDI_FREQ_TABLE[midi_note];
     voice->event_flags |= VOICE_EVENT_START;
     voice->state = VOICE_ACTIVE;
@@ -116,7 +118,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
 
     // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_STEAL_RTZ:",voice->idx);
 
-    // TODO: Fix
+    // TODO: NYI
     // voice->steal_pitch = MIDI_FREQ_TABLE[midi_note];
     voice->steal_note = midi_note;
     voice->steal_vel = midi_velocity;
@@ -143,7 +145,10 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
  * voice that is not active so we assert if that happens.
  */
 void voice_note_off(struct voice *voice, uint8_t midi_note)
-{
+{    
+  TRACE_ASSERT(voice);
+  // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_RELEASE:",voice->idx);
+  voice->event_flags |= VOICE_EVENT_RELEASE;
 }
 
 /* brief translates an update request into a VOICE_EVENT.
@@ -159,6 +164,7 @@ void voice_note_off(struct voice *voice, uint8_t midi_note)
  */
 void voice_update(struct voice *voice)
 {
+   voice->event_flags |= VOICE_EVENT_UPDATE;
 }
 
 /*
@@ -172,6 +178,12 @@ void voice_update(struct voice *voice)
  */
 static void voice_state_idle(struct voice *voice)
 {
+   if (voice->event_flags & VOICE_EVENT_UPDATE)
+  {    
+    // TRACE_PRINT_DEC("NoteOn:VOICE_UPDATE(IDLE):",voice->idx);
+    voice_update_modulators(voice);
+    voice->event_flags &= ~VOICE_EVENT_UPDATE;
+  }
 }
 
 /*
@@ -193,6 +205,66 @@ static void voice_state_idle(struct voice *voice)
  */
 static void voice_state_active(struct voice *voice)
 {
+  if (voice->event_flags & VOICE_EVENT_UPDATE)
+  {    
+    voice_update_modulators(voice);
+    voice->event_flags &= ~VOICE_EVENT_UPDATE;
+  }
+
+  if (voice->event_flags & VOICE_EVENT_START)
+  {   
+    /* New note, start the modulators, set envelopes to ATTACK state */
+    voice_start_modulators(voice);
+
+    // TODO: NYI
+    //env_note_on(&voice->amp_env, voice->note, voice->velocity);
+
+    voice->event_flags &= ~VOICE_EVENT_START;
+  }
+
+  if (voice->event_flags & VOICE_EVENT_RETRIGGER)
+  {
+    /* RTT_LOG("%sRender: Service VOICE_EVENT_RETRIGGER [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN,
+            voice->idx); */
+
+    /* Retrigger by setting the envelope to ATTACK state */
+    // TODO: NYI
+    // env_note_on(&voice->amp_env, voice->note, voice->velocity);
+
+    voice->event_flags &= ~VOICE_EVENT_RETRIGGER;
+  }
+
+  if (voice->event_flags & VOICE_EVENT_RELEASE)
+  {
+    /* RTT_LOG("%sRender: Service VOICE_EVENT_RELEASE [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN,
+            voice->idx); */
+
+    /* End the note by setting the envelope to RELEASE state, note that we are not ending the
+     * signal chain here as the voice may have a release phase and need to 'ring out'. We handle
+     * the ENV_OFF state as a separate state */
+    // TODO: NYI
+    // env_note_off(&voice->amp_env);
+    voice->event_flags &= ~VOICE_EVENT_RELEASE;
+  }
+
+  // TODO: NYI
+  // if (voice->amp_env.state == ENV_OFF)
+  // {
+  //   /* RTT_LOG("%sRender: Service ENV_OFF [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN, voice->idx);
+  //    */
+  //   /* Envelope has ended so note is now silent, stop the signal chain running and set the voice to
+  //    * IDLE */
+  //   RTT_LOG("Voice %d: ENV_OFF -> IDLE transition\n", voice->idx);
+  //   voice_stop_chain(voice);    RTT_LOG("Voice %d: ENV_OFF -> IDLE transition\n", voice->idx);
+  //   voice->state = VOICE_IDLE;
+  //   voice->event_flags = VOICE_EVENT_NONE;
+
+  //   /* We return directly here as there is no need to run the signal chain, the voice is silent */
+  //   return;
+  // }
+
+  /* Any events have been serviced, run the signal chain to generate samples */
+  voice_calculate_modulators(voice);
 }
 
 /*
@@ -218,6 +290,37 @@ static void voice_state_active(struct voice *voice)
  */
 static void voice_state_stealing(struct voice *voice)
 {
+   if (voice->event_flags & VOICE_EVENT_UPDATE)
+  {
+    voice_update_modulators(voice);
+    voice->event_flags &= ~VOICE_EVENT_UPDATE;
+  }
+
+  if (voice->event_flags & VOICE_EVENT_STEAL_RTZ)
+  {
+    /* RTT_LOG("%sRender: Service VOICE_EVENT_STEAL_RTZ [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN,
+            voice->idx); */
+    // TODO: NYI
+    // env_rtz(&voice->amp_env);
+    voice->event_flags &= ~VOICE_EVENT_STEAL_RTZ;
+  }
+
+  // TODO: NYI
+  // if (voice->amp_env.state == ENV_OFF)
+  // {
+  //   /* RTT_LOG("%sRender: Service ENV_OFF(RTZ) [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN,
+  //    * voice->idx); */
+  //   voice->note = voice->steal_note;
+  //   voice->velocity = voice->steal_velocity;
+  //   voice->pitch = voice->steal_pitch;
+  //   voice->event_flags |= VOICE_EVENT_START;
+  //   voice->state = VOICE_ACTIVE;
+
+  //   /* We leave the signal chain running as we know we're going straight into the steal note */
+  // }
+
+  /* Events have been serviced, run the modulators to generate values */
+  voice_calculate_modulators(voice);
 }
 
 /*
@@ -225,6 +328,9 @@ static void voice_state_stealing(struct voice *voice)
  */
 static void voice_init_modulators(struct voice *voice)
 {
+  // TODO: NYI
+  //env_init(&voice->amp_env);  
+  //lfo_init(&voice->lfo1);  
 }
 
 /*
@@ -234,6 +340,8 @@ static void voice_init_modulators(struct voice *voice)
  */
 static void voice_calculate_modulators(struct voice *voice)
 {
+   // TODO: NYI
+   // Render function calls here
 }
 
 /*
@@ -254,4 +362,25 @@ static void voice_calculate_modulators(struct voice *voice)
  */
 static void voice_update_modulators(struct voice *voice)
 {
+  // TODO: NYI
+  // Cascaded update calls here
 }
+
+void voice_start_modulators(struct voice *voice)
+{
+  /* RTT_LOG("%sStart voice chain %d\n", RTT_CTRL_TEXT_WHITE, voice->idx); */
+  // TODO:   NYI
+  // lfo_note_on(&voice->lfo1);
+}
+
+/**
+ * \brief stops the signal chain
+ *
+ * Not all modules require this notification, only those with a matching
+ * note_on call will have a note_off.
+ */
+void voice_stop_modulators(struct voice *voice)
+{
+  /* RTT_LOG("%sStop voice chain %d\n", RTT_CTRL_TEXT_WHITE, voice->idx); */  
+}
+
