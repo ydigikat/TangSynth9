@@ -1,9 +1,14 @@
+
 /*
  *  (c) Jason Wilden, 2026
  */
 
 #include "controller.h"
 #include "drv.h"
+
+#ifdef TRACE_ENABLED
+static const char *TRACE_FILE = "controller.c";
+#endif
 
 /* Number of samples in each control-rate cycle */
 #define LAST_IRQ_IN_CYCLE (46U)
@@ -29,8 +34,6 @@ void controller_init(struct controller *controller)
     voice_init(&controller->voice[i], controller->params);
     voice_update(&controller->voice[i]);
   }
-
-  TRACE_PRINTF("Controller:Initialised. MIDI channel %x\n", controller->midi_channel, 0, 0);
 }
 
 /*
@@ -46,26 +49,26 @@ void controller_handle_midi(struct controller *controller, struct midi_msg *msg)
   case MIDI_STATUS_NOTE_ON:
     if (msg->data[2] > 0)
     {
-      TRACE_PRINTF("Controller:Note On %x, %x\n", msg->data[1], msg->data[2], 0);
+      // TRACE_PRINT_DEC("NoteOn:",msg->data[1]);
       note_on(controller, msg->data[1], msg->data[2]);
     }
     else
     {
       /* Controllers can send a NOTE_ON with velocity 0 instead of NOTE_OFF */
-      TRACE_PRINTF("Controller:Note On (zero velocity) %x\n", msg->data[1], 0, 0);
+      // TRACE_PRINT_DEC("NoteOff:",msg->data[1]);
       note_off(controller, msg->data[1]);
     }
 
     break;
 
   case MIDI_STATUS_NOTE_OFF:
-    TRACE_PRINTF("Controller:Note Off (zero velocity) %x\n", msg->data[1], 0, 0);
+    // TRACE_PRINT_DEC("NoteOff:",msg->data[1]);
     note_off(controller, msg->data[1]);
     break;
 
   case MIDI_STATUS_CONTROL_CHANGE:
   {
-    TRACE_PRINTF("Controller: %d, %d\n", msg->data[1], msg->data[2], 0);
+    // TRACE_PRINTF("Controller: %d, %d\n", msg->data[1], msg->data[2], 0);
 
     update_voice_params(controller);
   }
@@ -111,10 +114,12 @@ uint8_t controller_execute(struct controller *controller, uint8_t irq_count)
       struct midi_msg *msg = midi_parse(&midi_in, byte);
       if (msg != NULL)
       {
-        TRACE_PRINTF("MIDI message: %x, %x, %x\n", msg->data[0], msg->data[1], msg->data[2]);
+        // TRACE_PRINT_HEX("D0:",msg->data[0],2);
+        // TRACE_PRINT_HEX("D1:",msg->data[1],2);
+        // TRACE_PRINT_HEX("D2:",msg->data[2],2);
         controller_handle_midi(controller, msg);
       }
-        }
+    }
 
     controller_calculate(controller);
 

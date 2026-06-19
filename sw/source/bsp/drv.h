@@ -6,8 +6,6 @@
 
 #include "bsp.h"
 
-
-
 /* ----------------------------------------------------------------------------
  * GPO Driver
  * --------------------------------------------------------------------------*/
@@ -25,61 +23,37 @@ static inline void gpo_clear_pin(GPO_t *restrict gpo, uint32_t pin_mask)
  * Trace Driver
  * --------------------------------------------------------------------------*/
 
- #ifdef TRACE_ENABLED
-#define TRACE_ASSERT(expr)                                                                                 \
-  do                                                                                                       \
-  {                                                                                                        \
-    if (!expr)                                                                                             \
-    {                                                                                                      \
-      trace_printf(TRACE, "ASSERTION FAILED: %s, function %s,  line %d", (uint32_t)__FILE__, (uint32_t)__FUNCTION__, __LINE__); \
-      while (1)                                                                                            \
-        ;                                                                                                  \
-    }                                                                                                      \
-  } while (0)
+void trace_str(TRACE_t *restrict trace, const char *s);
+void trace_str_dec(TRACE_t *restrict trace, const char *s, uint32_t val);
+void trace_str_hex(TRACE_t *restrict trace, const char *s, uint32_t val, uint8_t digits);
 
-#define TRACE_PRINT(s) trace_print(TRACE, s)
-#define TRACE_PRINTF(fmt, ...) trace_printf(TRACE, fmt, ##__VA_ARGS__)
-#else
-#define TRACE_ASSERT(expr)
-#define TRACE_PRINT(s)
-#define TRACE_PRINTF(fmt, ...)
-#endif /* TRACE_ENABLED */
-
-
-void trace_print(TRACE_t *restrict trace, const char *str);
-void trace_printf(TRACE_t *restrict trace, const char *fmt, uint32_t arg1, uint32_t arg2, uint32_t arg3);
-
-static inline void trace_set_divisor(TRACE_t *restrict trace, uint16_t div)
-{
-  MODIFY_REG(trace->CR, TRACE_CR_DIV, _VAL2FLD(TRACE_CR_DIV, div));
-}
+#ifdef TRACE_ENABLED
 
 static inline void trace_init(TRACE_t *restrict trace)
 {
-  trace_set_divisor(trace, TRACE_DIV);
+  MODIFY_REG(trace->CR, TRACE_CR_DIV, _VAL2FLD(TRACE_CR_DIV, TRACE_DIV));
 }
 
-static inline bool trace_send_data_ready(TRACE_t *restrict trace)
-{
-  return READ_BIT(trace->SR, TRACE_SR_TXRDY);
-}
+#define TRACE_ASSERT(expr) \
+  do { \
+    if (!(expr)) { \
+      trace_str(TRACE, TRACE_FILE); \
+      trace_str_dec(TRACE, "  line", __LINE__); \
+      while (1); \
+    } \
+  } while (0)
 
-static inline uint8_t trace_putch(TRACE_t *restrict trace, uint8_t c)
-{
-  uint16_t timeout_count = TRACE_TIMEOUT_COUNT;
+#define TRACE_PRINT(s) trace_str(TRACE, s)
+#define TRACE_PRINT_DEC(s, v) trace_str_dec(TRACE, s, v)
+#define TRACE_PRINT_HEX(s, v, d) trace_str_hex(TRACE, s, v, d)
+#else
+#define TRACE_ASSERT(expr)
+#define TRACE_PRINT(s)
+#define TRACE_PRINT_DEC(s, v)
+#define TRACE_PRINT_HEX(s, v, d)
+#endif
 
-  WRITE_REG(trace->TD, c);
 
-  while (!trace_send_data_ready(trace))
-  {
-    if (timeout_count-- == 0)
-    {
-      return TRACE_TIMEOUT;
-    }
-  }
-
-  return TRACE_SUCCESS;
-}
 
 /*----------------------------------------------------------------------------
  * MIDI Driver

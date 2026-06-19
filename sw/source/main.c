@@ -21,12 +21,13 @@ static inline uint32_t reload_timer(uint32_t val);
  * Firmware entry point
  */
 int main(void)
-{  
-  trace_init(TRACE);  
+{ 
+#ifdef TRACE_ENABLED   
+  trace_init(TRACE);
+#endif
+    
   reload_timer(TIMER_COUNT);
-  controller_init(&controller);
-
-  TRACE_PRINT("=== TangSynth9 template initialised ===\n");  
+  controller_init(&controller);  
 
   while (1)
   {

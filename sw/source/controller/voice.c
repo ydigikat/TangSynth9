@@ -5,6 +5,10 @@
 #include "voice.h"
 #include "drv.h"
 
+#ifdef TRACE_ENABLED
+static const char *TRACE_FILE = "voice.c";
+#endif
+
 enum VOICE_EVENT
 {
   VOICE_EVENT_NONE = 0,
@@ -89,7 +93,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
   {
   case VOICE_IDLE:
 
-    TRACE_PRINTF("Note On: Request VOICE_EVENT_START [voice %d]\n", voice->idx,0,0);
+    // TRACE_PRINTF("Note On: Request VOICE_EVENT_START [voice %d]\n", voice->idx,0,0);
 
     voice->note = midi_note;
     voice->vel = midi_velocity;
@@ -103,14 +107,14 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
   case VOICE_ACTIVE:
     if (voice->note == midi_note)
     {
-      TRACE_PRINTF("Note On: Request VOICE_EVENT_RETRIGGER [voice %d]\n", voice->idx,0,0);
+      // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_RETRIGGER:",voice->idx);
 
       voice->vel = midi_velocity;
       voice->event_flags |= VOICE_EVENT_RETRIGGER;
       return;
     }
 
-    TRACE_PRINTF("Note On: Request VOICE_EVENT_STEAL_RTZ [voice %d]\n", voice->idx, 0, 0);
+    // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_STEAL_RTZ:",voice->idx);
 
     // TODO: Fix
     // voice->steal_pitch = MIDI_FREQ_TABLE[midi_note];
@@ -121,7 +125,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
     break;
 
   case VOICE_STEALING:
-    TRACE_ASSERT(false); /* this should not happen */
+    //    TRACE_ASSERT(false); /* this should not happen */
     break;
   }
 }
