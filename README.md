@@ -34,7 +34,7 @@ The Tang Nano 9K hosts the GW1NR-9 which is a SIP (FPGA & PSRAM)
 
 The SOC divides the functionality into a control-plane, managed by the CPU, and a data plane which is a pure RTL pipeline.
 
-The MCU handles the more complicated and slower rate logic, concerned with voice allocation, parameters and MIDI parsing.
+The MCU handles the more complicated and slower rate logic, concerned with voice allocation, control rate signals (modulation), parameters and MIDI parsing.
 
 The RTL data-plane handles the voice DSP and is independent from the MCU.
 
