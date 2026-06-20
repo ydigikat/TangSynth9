@@ -82,7 +82,6 @@ struct env
 };
 
 /* API */
-
 void env_init(struct env *env);
 void env_reset(struct env *env);
 void env_render(struct env *env, Q1_15 *output);

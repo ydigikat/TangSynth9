@@ -27,31 +27,58 @@ static void (*env_state_handlers[ENV_MAX])(struct env *env) = {
 static Q1_15 (*env_transforms[])(Q1_15 level, Q1_15 sustain) = {
     env_mode_normal, env_mode_biased, env_mode_inverted, env_mode_biased_inverted};
 
+
+/*
+ * Initialises the envelope.
+ */    
 void env_init(struct env *env)
 {
   env_reset(env);
 }
 
+/*
+ * Resets the envelope.
+ */
 void env_reset(struct env *env)
 {
   env->state = ENV_OFF;
   env->level = 0;
 }
 
+/*
+ * Processes one block of the envelope generator state machine
+ *
+ * Calls the appropriate state handler function directly using the jump
+ * table indexed on envelope state.  It then applies a transform which
+ * uses another function jump table indexed by the envelope mode.
+ */
 void env_render(struct env *env, Q1_15 *output)
 {
   env_state_handlers[env->state](env);
   *output = env_transforms[env->mode](env->level, env->sustain);
 }
 
+
+/*
+ * Calc segment curves and start the envelope state machine
+ *
+ * The attack and decay are scaled by velocity/pitch if tracking is enabled, a higher
+ * velocity/note reduces the attack/decay time as you might expect from a piano.  
+ */
 void env_note_on(struct env *env, uint8_t midi_note, uint8_t midi_velocity)
 {
-  // TODO : Scalers not implemented yet.
+  // TODO : Implement scaling
   (void)midi_note;
   (void)midi_velocity;
 
   env->state = ENV_ATTACK;
 }
+
+
+/*
+ * Triggers the release phase when a key is released
+ * Transitions to RELEASE state if level is above zero, otherwise goes directly to OFF state.
+ */
 
 void env_note_off(struct env *env)
 {
@@ -65,6 +92,13 @@ void env_note_off(struct env *env)
   }
 }
 
+/*
+ * Return To Zero - rapidly silences the envelope
+ *
+ * Used during voice stealing operations when a voice needs to be
+ * quickly repurposed for a new note. Creates a short linear ramp
+ * to zero regardless of current envelope state.
+ */
 void env_rtz(struct env *env)
 {
 
@@ -79,6 +113,10 @@ void env_rtz(struct env *env)
   }
 }
 
+/*
+ * Updates internal state following a parameter change. This uses a linear
+ * mapping rather than a power curve for the parameter values.
+ */
 void env_update(struct env *env, uint8_t attack, uint8_t decay, Q1_15 sustain, uint8_t release,
                 uint8_t mode, bool note_track, bool velocity_track)
 {
@@ -102,11 +140,22 @@ void env_update(struct env *env, uint8_t attack, uint8_t decay, Q1_15 sustain, u
                                     q15_mul((int16_t)env->sustain, (int16_t)(Q15_ONE - env->decay_coeff)));
 }
 
+/*
+ * Implements the OFF state - the final envelope state where output is zero
+ */
 static void env_state_off(struct env *env)
 {
   env->level = 0;
 }
 
+
+/*
+ * Implements the ATTACK state - initial envelope segment with rising amplitude
+ *
+ * Automatically transitions to DECAY state when:
+ *       - Level reaches 1.0 (full amplitude)
+ *       - Attack time is zero (immediate attack)
+ */
 static void env_state_attack(struct env *env)
 {
   if (env->attack == 0)
@@ -125,6 +174,15 @@ static void env_state_attack(struct env *env)
   }
 }
 
+/*
+ * Implements the DECAY state - segment where amplitude falls to sustain level
+ *
+ * Automatically transitions to SUSTAIN state when:
+ *       - Level reaches the sustain level
+ *       - Decay time is zero (immediate decay)
+ *
+ * If the decay is 0 then it jumps directly to the sustain.
+ */
 static void env_state_decay(struct env *env)
 {
   if (env->decay == 0)
@@ -143,11 +201,23 @@ static void env_state_decay(struct env *env)
   }
 }
 
+/*
+ * Implements the SUSTAIN state - maintains constant level until note-off
+ *
+ * This state has no automatic transition - it remains active until explicitly
+ * changed by a note-off event triggering the RELEASE state.
+ */
 static void env_state_sustain(struct env *env)
 {
   env->level = env->sustain;
 }
 
+/*
+ * Implements the RELEASE state - decreasing amplitude after note-off
+ *
+ * Triggered by note-off event, not by an automatic state transition.
+ * Transitions to OFF state when amplitude reaches zero or release time is zero.
+ */
 static void env_state_release(struct env *env)
 {
   if (env->release == 0)
@@ -166,6 +236,12 @@ static void env_state_release(struct env *env)
   }
 }
 
+/*
+ * Implements rapid amplitude fade to zero for voice termination
+ *
+ * Used during voice stealing or RTZ (return to zero) operations when
+ * a voice needs to be quickly silenced. Uses linear ramp rather than
+ */
 static void env_state_shutdown(struct env *env)
 {
   env->level = (Q1_15)((int16_t)env->level + env->inc_shutdown);
