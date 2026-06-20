@@ -2,84 +2,136 @@
 # ------------------------------------------------------------------------------
 # (c) Jason Wilden, 2026
 # ------------------------------------------------------------------------------
-# This script generates tables used by the envelope generator in Q1.15 fixed
-# decimal format.
-#
-# The picorv32 has no FPU an no math functions.  These LUT avoids porting exp
-# and log functions to fixed point.  
-# ------------------------------------------------------------------------------
+ 
 import math
 
-SAMPLE_RATE = 46875.0       # Actual Fs (including any error)
-BLOCK_SIZE = 32             # Cycle length
-ENV_TIME_MIN_MS = 1.0       # Fastest time (ms)
-ENV_TIME_MAX_MS = 8000.0    # Slowest time (ms)
-NUM_STEPS = 128             # MIDI maximum
-Q15_ONE = 32767             #  Max positive
+SAMPLE_RATE      = 46875.0   # Actual Fs on TangSynth9 (see README.md)
+BLOCK_SIZE = 32        # Samples per audio block (edit to match dae.h)
+ENV_TIME_MIN_MS      = 1.0       # Fastest attack/decay/release (ms)
+ENV_TIME_MAX_MS      = 8000.0    # Slowest attack/decay/release (ms)
 
-ATTACK_TCO = math.exp(-1.5) #  Attack Time Constant Overshoots
-DECAY_RELEASE_TCO = math.exp(-4.95) 
+# Time-constant-overshoot values, identical meaning to original env.c
+ATTACK_TCO  = math.exp(-1.5)
+DECAY_TCO   = math.exp(-4.95)
+RELEASE_TCO = DECAY_TCO
 
-# Maps the 7-bit MIDI value onto the time range - this is used for velocity
-# scaling.  Velocity modifies the envelope lengths rather than just changing
-# volume.
+NUM_STEPS = 128  # 7-bit MIDI param range
+Q15_ONE = 32767       # Max positive value unsigned Q1.15
+Q15_MIN_SIGNED = -32768
+Q15_MAX_SIGNED = 32767
+
+
+# Maps MIDI value (0-127) to ms.
 def midi_to_ms(midi_val: int) -> float:
     t = midi_val / (NUM_STEPS - 1)
     return ENV_TIME_MIN_MS + t * (ENV_TIME_MAX_MS - ENV_TIME_MIN_MS)
 
-# Converts a duration in ms to a duration in blocks (fractional)
-def ms_to_blocks(ms: float) -> float:    
-    blocks = (ms / 1000.0) * SAMPLE_RATE / BLOCK_SIZE
-    return max(blocks, 1.0)  # ensure at least 1 block.
 
-# Per block multiplier for segment
-def redmon_coeff(tco: float, blocks: float) -> float:    
+# Converts a duration in ms to blocks (fractional)
+def ms_to_blocks(ms: float) -> float:
+    blocks = (ms / 1000.0) * SAMPLE_RATE / BLOCK_SIZE
+    return max(blocks, 1.0)  # ensure at least 1
+
+# Calculate coeff for asymtoptic segment
+def redmon_coeff(tco: float, blocks: float) -> float:
     return math.exp(-math.log((1.0 + tco) / tco) / blocks)
 
-# Quantise a normalised float to Q1.15 format.
-def to_q15(x: float) -> int:
+
+# Quantizes a float in [0.0, 1.0) to unsigned Q1.15 (uint16_t).
+def to_q15_unsigned(x: float) -> int:    
     val = round(x * 32768.0)
     return max(0, min(val, Q15_ONE))
 
-# Here onwards is the generation of the output tables
-def generate_coeff_table(tco: float) -> list[int]:
-    table = []
+
+#  Quantizes a float in [-1.0, 1.0) to signed Q1.15 (int16_t), two's
+#   complement. Needed for overshoot terms that are genuinely negative
+#   (release_overshoot, decay_overshoot_base) - storing these unsigned
+#   would silently wrap.
+def to_q15_signed(x: float) -> int:    
+    val = round(x * 32768.0)
+    val = max(Q15_MIN_SIGNED, min(val, Q15_MAX_SIGNED))
+    return val & 0xFFFF  # two's complement bit pattern for C hex literal
+
+
+def generate_tables():
+    attack_coeff = []
+    attack_overshoot = []
+    decay_coeff = []
+    decay_overshoot_base = []
+    release_overshoot = []
+
     for midi_val in range(NUM_STEPS):
         ms = midi_to_ms(midi_val)
         blocks = ms_to_blocks(ms)
-        coeff = redmon_coeff(tco, blocks)
-        table.append(to_q15(coeff))
-    return table
 
-def format_c_array(name: str, values: list[int], per_line: int = 8) -> str:
-    lines = [f"const Q1_15 {name}[{len(values)}] = {{"]
+        a_coeff = redmon_coeff(ATTACK_TCO, blocks)
+        d_coeff = redmon_coeff(DECAY_TCO, blocks)
+        r_coeff = redmon_coeff(RELEASE_TCO, blocks) 
+
+        attack_coeff.append(to_q15_unsigned(a_coeff))
+
+        # attack_overshoot = (1 + tco) * (1 - coeff) 
+        a_over = (1.0 + ATTACK_TCO) * (1.0 - a_coeff)
+        attack_overshoot.append(to_q15_unsigned(a_over))
+
+        decay_coeff.append(to_q15_unsigned(d_coeff))
+
+        # decay_overshoot_base = -tco * (1 - coeff)  
+        d_over_base = -DECAY_TCO * (1.0 - d_coeff)
+        decay_overshoot_base.append(to_q15_signed(d_over_base))
+
+        # release_overshoot = -tco * (1 - coeff)  
+        r_over = -RELEASE_TCO * (1.0 - r_coeff)
+        release_overshoot.append(to_q15_signed(r_over))
+
+    return {
+        "env_attack_coeff_lut": (attack_coeff, "Q1_15"),
+        "env_attack_overshoot_lut": (attack_overshoot, "Q1_15"),
+        "env_decay_coeff_lut": (decay_coeff, "Q1_15"),
+        "env_decay_overshoot_base_lut": (decay_overshoot_base, "int16_t"),
+        "env_release_overshoot_lut": (release_overshoot, "int16_t"),
+    }
+
+
+def format_c_array(name: str, values: list[int], c_type: str, per_line: int = 8) -> str:
+    lines = [f"const {c_type} {name}[{len(values)}] = {{"]
     for i in range(0, len(values), per_line):
         chunk = values[i:i + per_line]
-        row = ", ".join(f"0x{v:04X}" for v in chunk)
+        #row = ", ".join(f"0x{v:04X}" for v in chunk)
+        row = ", ".join(f"{v:5d}" for v in chunk)
         lines.append(f"    {row},")
     lines.append("};")
     return "\n".join(lines)
 
 
 def main():
-    attack_table  = generate_coeff_table(ATTACK_TCO)
-    decay_table   = generate_coeff_table(DECAY_RELEASE_TCO)   # release reuses this table (same tco)
+    tables = generate_tables()
 
     print("/*")
-    print(" * Generated by env_gen_luts.py ")
-    print(f" * DAE_SAMPLE_RATE={SAMPLE_RATE}, DAE_AUDIO_BLOCK_SIZE={BLOCK_SIZE}")
+    print(" * ---------------------------------------------------------------------- ")
+    print(" * These Tables were generated by env_gen_luts.py")
+    print(" *")
+    print(f" * SAMPLE_RATE={SAMPLE_RATE}, BLOCK_SIZE={BLOCK_SIZE}")
     print(f" * ENV_TIME_MIN_MS={ENV_TIME_MIN_MS}, ENV_TIME_MAX_MS={ENV_TIME_MAX_MS}")
+    print(f" * ATTACK_TCO={ATTACK_TCO:.6f}, DECAY_TCO=RELEASE_TCO={DECAY_TCO:.6f}")    
     print(" */")
     print()
-    print(format_c_array("env_attack_coeff_lut", attack_table))
-    print()
-    print(format_c_array("env_decay_release_coeff_lut", decay_table))
-    print()
+    for name, (values, c_type) in tables.items():
+        print(format_c_array(name, values, c_type))
+        print()
 
+    # Checks/debug
+    #a_coeff, _ = tables["env_attack_coeff_lut"]
+    #a_over, _ = tables["env_attack_overshoot_lut"]
+    #r_over, _ = tables["env_release_overshoot_lut"]
     # print("/*")
-    # print(f" *   MIDI 0   -> {midi_to_ms(0):8.2f} ms  attack_coeff=0x{attack_table[0]:04X}")
-    # print(f" *   MIDI 64  -> {midi_to_ms(64):8.2f} ms  attack_coeff=0x{attack_table[64]:04X}")
-    # print(f" *   MIDI 127 -> {midi_to_ms(127):8.2f} ms  attack_coeff=0x{attack_table[127]:04X}")
+    # print(" * Sanity check (not emitted to firmware):")
+    # for midi_val in (0, 64, 127):
+    #     ms = midi_to_ms(midi_val)
+    #     print(f" *   MIDI {midi_val:3d} -> {ms:8.2f} ms  "
+    #           f"attack_coeff=0x{a_coeff[midi_val]:04X}  "
+    #           f"attack_overshoot=0x{a_over[midi_val]:04X}  "
+    #           f"release_overshoot=0x{r_over[midi_val]:04X}")
     # print(" */")
 
 
