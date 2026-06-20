@@ -41,6 +41,7 @@ void voice_init(struct voice *voice, uint8_t params[])
 {
   voice->params = params;
   voice_reset(voice);
+  voice_init_modulators(voice);
 }
 
 void voice_reset(struct voice *voice)
@@ -328,9 +329,8 @@ static void voice_state_stealing(struct voice *voice)
  */
 static void voice_init_modulators(struct voice *voice)
 {
-  // TODO: NYI
-  //env_init(&voice->amp_env);  
-  //lfo_init(&voice->lfo1);  
+  env_init(&voice->amp_env);
+  env_init(&voice->mod_env);
 }
 
 /*
@@ -340,8 +340,7 @@ static void voice_init_modulators(struct voice *voice)
  */
 static void voice_calculate_modulators(struct voice *voice)
 {
-   // TODO: NYI
-   // Render function calls here
+  // env_render(&voice->amp_env, &voice->modulators[ENV1_LEVEL]);
 }
 
 /*

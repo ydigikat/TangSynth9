@@ -4,6 +4,8 @@
 
 #include "env.h"
 
+
+
 /* State functions */
 static void env_state_off(struct env *env);
 static void env_state_attack(struct env *env);

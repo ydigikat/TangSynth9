@@ -6,8 +6,8 @@
 #define __VOICE_H__
 
 #include <stdint.h>
-
 #include "types.h"
+#include "env.h"
 
 enum voice_state
 {
@@ -34,6 +34,10 @@ struct voice
   Q1_15 amp_eg_lvl;
   Q1_15 mod_eg_lvl;
   Q1_15 lfo_lvl;
+
+  /* Modulators */
+  struct env amp_env;
+  struct env mod_env;
 };
 
 /* API */
