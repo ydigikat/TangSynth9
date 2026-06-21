@@ -106,9 +106,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
 
     voice->note = midi_note;
     voice->vel = midi_velocity;
-
-    // TODO: NYI
-    // voice->pitch = MIDI_FREQ_TABLE[midi_note];
+    voice->pitch = midi_fcw_lut[midi_note];
     voice->event_flags |= VOICE_EVENT_START;
     voice->state = VOICE_ACTIVE;
     break;
@@ -123,10 +121,8 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
       return;
     }
 
-    // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_STEAL_RTZ:",voice->idx);
-
-    // TODO: NYI
-    // voice->steal_pitch = MIDI_FREQ_TABLE[midi_note];
+    // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_STEAL_RTZ:",voice->idx);    
+    voice->steal_pitch = midi_fcw_lut[midi_note];
     voice->steal_note = midi_note;
     voice->steal_vel = midi_velocity;
     voice->state = VOICE_STEALING;
