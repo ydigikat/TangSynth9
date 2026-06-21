@@ -17,7 +17,7 @@ extern const int16_t env_decay_overshoot_base_lut[ENV_DECAY_OVERSHOOT_CUTOFF];
 extern const int16_t env_release_overshoot_lut[ENV_RELEASE_OVERSHOOT_CUTOFF];  
 
 /*
- * Bounds-checked lookup into a truncated overshoot LUT.
+ * Bounds-checked lookup into a truncated ADSR TCO LUT.
  */
 static inline int16_t env_overshoot_lookup(const int16_t *table, uint8_t cutoff, uint8_t midi_val)
 {

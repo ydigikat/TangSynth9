@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "env_luts.h"
+#include "luts.h"
 
 /*
 * This is a fixed point port of my Frugi floating point generator which uses Nigel
