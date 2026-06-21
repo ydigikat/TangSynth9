@@ -7,11 +7,21 @@
 #include <stdint.h>
 #include "types.h"
 
-extern const Q1_15  env_attack_coeff_lut[128];
-extern const Q1_15  env_attack_overshoot_lut[128];      /* always >= 0, safe as unsigned */
-extern const Q1_15  env_decay_coeff_lut[128];           /* als the release_coeff */
-extern const int16_t env_decay_overshoot_base_lut[128]; /* SIGNED - always <= 0 */
-extern const int16_t env_release_overshoot_lut[128];    /* SIGNED - always <= 0 */
+#define ENV_DECAY_OVERSHOOT_CUTOFF  25
+#define ENV_RELEASE_OVERSHOOT_CUTOFF 25
 
+extern const Q1_15  env_attack_coeff_lut[128];
+extern const Q1_15  env_attack_overshoot_lut[128];
+extern const Q1_15  env_decay_coeff_lut[128];                                  
+extern const int16_t env_decay_overshoot_base_lut[ENV_DECAY_OVERSHOOT_CUTOFF]; 
+extern const int16_t env_release_overshoot_lut[ENV_RELEASE_OVERSHOOT_CUTOFF];  
+
+/*
+ * Bounds-checked lookup into a truncated overshoot LUT.
+ */
+static inline int16_t env_overshoot_lookup(const int16_t *table, uint8_t cutoff, uint8_t midi_val)
+{
+  return (midi_val < cutoff) ? table[midi_val] : 0;
+}
 
 #endif /* __ENV_LUTS_H__ */

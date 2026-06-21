@@ -23,7 +23,7 @@ set(SRCS_APP
 set(INCL_APP ${SRC_DIR} ${SRC_DIR}/controller)
 set(DEFS_APP 
       $<$<CONFIG:DEBUG>: DEBUG>       
-      TRACE_ENABLED
+      #TRACE_ENABLED
 )
 
 # Size of the BSRAM in words on target FPGA.

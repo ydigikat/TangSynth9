@@ -27,7 +27,7 @@ struct voice
   uint8_t vel, steal_vel;
 
   /* Parameters */
-  uint8_t *params;
+  const uint8_t *params;
 
   /* Normalised values */
   Q1_15 pitch, steal_pitch;
@@ -41,12 +41,12 @@ struct voice
 };
 
 /* API */
-void voice_init(struct voice *voice, uint8_t params[]);
+void voice_init(struct voice *voice, const uint8_t *restrict params);
 void voice_reset(struct voice *voice);
 void voice_calculate(struct voice *voice);
 void voice_update(struct voice *voice);
 void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity);
-void voice_note_off(struct voice *voice, uint8_t midi_note);
+void voice_note_off(struct voice *voice);
 void voice_legato(struct voice *voice, uint8_t midi_note);
 
 #endif /* __VOICE_H__ */

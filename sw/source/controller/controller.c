@@ -192,7 +192,7 @@ static void note_off(struct controller *controller, uint8_t note)
   struct voice *voice = find_voice_by_note(controller, note);
   if (voice)
   {
-    voice_note_off(voice, note);
+    voice_note_off(voice);
   }
 }
 

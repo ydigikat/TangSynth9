@@ -37,8 +37,11 @@ static void (*voice_state_handlers[])(struct voice *voice) = {voice_state_idle,
                                                               voice_state_active,
                                                               voice_state_stealing};
 
-void voice_init(struct voice *voice, uint8_t params[])
+void voice_init(struct voice *voice, const uint8_t *restrict params)
 {
+  // TRACE_ASSERT(voice);
+  // TRACE_ASSERT(params);
+
   voice->params = params;
   voice_reset(voice);
   voice_init_modulators(voice);
@@ -46,6 +49,8 @@ void voice_init(struct voice *voice, uint8_t params[])
 
 void voice_reset(struct voice *voice)
 {
+  // TRACE_ASSERT(voice);
+
   voice->note = 0;
   voice->vel = 0;
   voice->pitch = 0;
@@ -59,6 +64,7 @@ void voice_reset(struct voice *voice)
 
 void voice_calculate(struct voice *voice)
 {
+  // TRACE_ASSERT(voice);
   voice_state_handlers[voice->state](voice);
 }
 
@@ -78,10 +84,10 @@ void voice_calculate(struct voice *voice)
  * - VOICE_EVENT_START     + State IDLE   : Free voice and new note, simplest case.
  * - VOICE_EVENT_RETRIGGER + State ACTIVE : The note is the same, retrigger envelope.
  * - VOICE_EVENT_STEAL_RTZ + State ACTIVE : The note is different, initiate the voice steal process.
- * - VOICE_EVENT_UPDATE                   : A parameter has changed, update the signal chain
+ * - VOICE_EVENT_UPDATE                   : A parameter has changed, update the modulators
  * modules.
  *
- * Voice updates must be processed for all states, updating the internal state of the signal chain
+ * Voice updates must be processed for all states, updating the internal state of the modulators
  * can happen at any point in a voice lifecycle and needs to be scheduled just like the note events.
  *
  * Note that we should never see a note_on event arrive when the voice is in the VOICE_STEALING
@@ -145,7 +151,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
  * The synth voice allocation algorithm should ensure that we never receive a note off for a
  * voice that is not active so we assert if that happens.
  */
-void voice_note_off(struct voice *voice, uint8_t midi_note)
+void voice_note_off(struct voice *voice)
 {    
   TRACE_ASSERT(voice);
   // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_RELEASE:",voice->idx);
@@ -190,14 +196,14 @@ static void voice_state_idle(struct voice *voice)
 /*
  * Handles the VOICE_ACTIVE state
  *
- * When the voice is active, any events need to be handled before the signal chain is called
+ * When the voice is active, any events need to be handled before the modulators is called
  * so that they take effect at the start of the block.  This is where the asynchronous MIDI
  * time-domain events are converted to deterministic AUDIO time domain actions.
  *
- * VOICE_EVENT_START : Starts the signal chain for a new note.
+ * VOICE_EVENT_START : Starts the modulators for a new note.
  * VOICE_EVENT_RETRIGGER : Resets the envelope for the ACTIVE voice.
  * VOICE_EVENT_RELEASE:  Moves the envelope generator to the release segment.
- * VOICE_EVENT_UPDATE: Updates the parameters for the signal chain modules.
+ * VOICE_EVENT_UPDATE: Updates the parameters for the modulators modules.
  * VOICE_EVENT_LEGATO: In mono mode only, notify a note on without changing envelope.
  * ENV_OFF: Switches the voice to IDLE.
  *
@@ -216,55 +222,47 @@ static void voice_state_active(struct voice *voice)
   {   
     /* New note, start the modulators, set envelopes to ATTACK state */
     voice_start_modulators(voice);
-
-    // TODO: NYI
-    //env_note_on(&voice->amp_env, voice->note, voice->velocity);
+    env_note_on(&voice->amp_env, voice->note, voice->vel);
 
     voice->event_flags &= ~VOICE_EVENT_START;
   }
 
   if (voice->event_flags & VOICE_EVENT_RETRIGGER)
-  {
-    /* RTT_LOG("%sRender: Service VOICE_EVENT_RETRIGGER [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN,
-            voice->idx); */
-
-    /* Retrigger by setting the envelope to ATTACK state */
-    // TODO: NYI
-    // env_note_on(&voice->amp_env, voice->note, voice->velocity);
+  {  
+    // TRACE_PRINT_DEC("VOICE_EVENT_RETRIGGER:",voice->idx);
+    /* Retrigger by setting the envelope to ATTACK state */    
+    env_note_on(&voice->amp_env, voice->note, voice->vel);
 
     voice->event_flags &= ~VOICE_EVENT_RETRIGGER;
   }
 
   if (voice->event_flags & VOICE_EVENT_RELEASE)
   {
-    /* RTT_LOG("%sRender: Service VOICE_EVENT_RELEASE [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN,
-            voice->idx); */
-
-    /* End the note by setting the envelope to RELEASE state, note that we are not ending the
-     * signal chain here as the voice may have a release phase and need to 'ring out'. We handle
-     * the ENV_OFF state as a separate state */
-    // TODO: NYI
-    // env_note_off(&voice->amp_env);
+    // TRACE_PRINT_DEC("VOICE_EVENT_RELEASE:",voice->idx);
+    
+    /* 
+     * End the note by setting the envelope to RELEASE state, note that we are not ending the
+     * modulators here as the voice may have a release phase and need to 'ring out'. We handle
+     * the ENV_OFF state as a separate state 
+     */
+    
+    env_note_off(&voice->amp_env);
     voice->event_flags &= ~VOICE_EVENT_RELEASE;
   }
 
-  // TODO: NYI
-  // if (voice->amp_env.state == ENV_OFF)
-  // {
-  //   /* RTT_LOG("%sRender: Service ENV_OFF [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN, voice->idx);
-  //    */
-  //   /* Envelope has ended so note is now silent, stop the signal chain running and set the voice to
-  //    * IDLE */
-  //   RTT_LOG("Voice %d: ENV_OFF -> IDLE transition\n", voice->idx);
-  //   voice_stop_chain(voice);    RTT_LOG("Voice %d: ENV_OFF -> IDLE transition\n", voice->idx);
-  //   voice->state = VOICE_IDLE;
-  //   voice->event_flags = VOICE_EVENT_NONE;
+  
+  if (voice->amp_env.state == ENV_OFF)
+  {
+    // TRACE_PRINT_DEC("ENV_OFF->IDLE:",voice->idx);    
+    voice_stop_modulators(voice);   
+    voice->state = VOICE_IDLE;
+    voice->event_flags = VOICE_EVENT_NONE;
 
-  //   /* We return directly here as there is no need to run the signal chain, the voice is silent */
-  //   return;
-  // }
+    /* We return directly here as there is no need to run the modulators anymore, the voice is silent */
+    return;
+  }
 
-  /* Any events have been serviced, run the signal chain to generate samples */
+  /* Any events have been serviced, run the modulators to generate samples */
   voice_calculate_modulators(voice);
 }
 
@@ -283,7 +281,7 @@ static void voice_state_active(struct voice *voice)
  * allocator that the voice is mid-steal and cannot be stolen again until the transition is
  * complete.
  *
- * We still handle voice updates in this state, the audio signal chain is running during this
+ * We still handle voice updates in this state, the audio modulators is running during this
  * state and we need to reflect user changes to parameters as usual.
  *
  * VOICE_EVENT_STEAL_RTZ: Signal the enveloper generator to quickly fade the voice to silence.
@@ -298,27 +296,23 @@ static void voice_state_stealing(struct voice *voice)
   }
 
   if (voice->event_flags & VOICE_EVENT_STEAL_RTZ)
-  {
-    /* RTT_LOG("%sRender: Service VOICE_EVENT_STEAL_RTZ [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN,
-            voice->idx); */
-    // TODO: NYI
-    // env_rtz(&voice->amp_env);
+  {    
+    // TRACE_PRINT_DEC("VOICE_EVENT_STEAL_RTZ:",voice->idx);
+    env_rtz(&voice->amp_env);
     voice->event_flags &= ~VOICE_EVENT_STEAL_RTZ;
   }
+  
+  if (voice->amp_env.state == ENV_OFF)
+  {
+    // TRACE_PRINT_DEC("ENV_OFF(RTZ):",voice->idx);
+    voice->note = voice->steal_note;
+    voice->vel = voice->steal_vel;
+    voice->pitch = voice->steal_pitch;
+    voice->event_flags |= VOICE_EVENT_START;
+    voice->state = VOICE_ACTIVE;
 
-  // TODO: NYI
-  // if (voice->amp_env.state == ENV_OFF)
-  // {
-  //   /* RTT_LOG("%sRender: Service ENV_OFF(RTZ) [voice %d]\n", RTT_CTRL_TEXT_BRIGHT_GREEN,
-  //    * voice->idx); */
-  //   voice->note = voice->steal_note;
-  //   voice->velocity = voice->steal_velocity;
-  //   voice->pitch = voice->steal_pitch;
-  //   voice->event_flags |= VOICE_EVENT_START;
-  //   voice->state = VOICE_ACTIVE;
-
-  //   /* We leave the signal chain running as we know we're going straight into the steal note */
-  // }
+    /* We leave the modulators running as we know we're going straight into the steal note */
+  }
 
   /* Events have been serviced, run the modulators to generate values */
   voice_calculate_modulators(voice);
@@ -340,6 +334,7 @@ static void voice_init_modulators(struct voice *voice)
  */
 static void voice_calculate_modulators(struct voice *voice)
 {
+  // TODO: NYI
   // env_render(&voice->amp_env, &voice->modulators[ENV1_LEVEL]);
 }
 
@@ -360,26 +355,27 @@ static void voice_calculate_modulators(struct voice *voice)
  * SYNTH division in the mappings is handled already.
  */
 static void voice_update_modulators(struct voice *voice)
-{
-  // TODO: NYI
-  // Cascaded update calls here
+{    
+  // TODO Params need to be implemented 
+//   env_update(&voice->amp_env, voice->params[AMP_ATTACK], voice->params[AMP_DECAY],
+//              voice->params[AMP_SUSTAIN], voice->params[AMP_RELEASE], ENV_NORMAL,
+//              voice->params[AMP_NOTE_TRACK], voice->params[AMP_VELOCITY_TRACK]);
+// 
 }
 
 void voice_start_modulators(struct voice *voice)
 {
-  /* RTT_LOG("%sStart voice chain %d\n", RTT_CTRL_TEXT_WHITE, voice->idx); */
-  // TODO:   NYI
-  // lfo_note_on(&voice->lfo1);
+  // TODO: LFOs only need to be started.
 }
 
 /**
- * \brief stops the signal chain
+ * \brief stops the modulators
  *
  * Not all modules require this notification, only those with a matching
  * note_on call will have a note_off.
  */
 void voice_stop_modulators(struct voice *voice)
 {
-  /* RTT_LOG("%sStop voice chain %d\n", RTT_CTRL_TEXT_WHITE, voice->idx); */  
+  // TODO: LFOs only need to be stopped.
 }
 
