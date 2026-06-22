@@ -3,6 +3,7 @@
  */
 
 #include "env.h"
+#include "params.h"
 
 
 
@@ -127,7 +128,7 @@ void env_update(struct env *env, uint8_t attack, uint8_t decay, Q1_15 sustain, u
   env->sustain = sustain;
   env->release = release;
 
-  env->mode = (mode < ENV_MODE_COUNT) ? mode : ENV_MODE_NORMAL;
+  env->mode = (mode < ENV_MODE_COUNT) ? mode : ENV_NORMAL;
 
   env->note_track     = note_track;
   env->velocity_track = velocity_track;

@@ -24,8 +24,6 @@
 * There is a single software division left in the RTZ path which is only called once
 * during a voice steal event so the divide is an acceptable cost.
 */
-
-
 enum env_state
 {
   ENV_OFF,
@@ -35,15 +33,6 @@ enum env_state
   ENV_RELEASE,
   ENV_SHUTDOWN,
   ENV_MAX
-};
-
-enum env_mode
-{
-  ENV_MODE_NORMAL,
-  ENV_MODE_BIASED,
-  ENV_MODE_INVERTED,
-  ENV_MODE_BIASED_INVERTED,
-  ENV_MODE_COUNT
 };
 
 struct env

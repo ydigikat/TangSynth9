@@ -1,8 +1,8 @@
 # TangSynth9
 
-TangSynth9 is a template SOC design providing a starting point for digital synthesiser projects.
+TangSynth9 is a template SOC design providing a starting point for digital synthesiser projects.  
 
-It is a SOC implementation comprising:
+The SOC implementation comprises:
 
 **SOC**
 
@@ -18,7 +18,7 @@ It is a SOC implementation comprising:
   - Audio mixing (voice summing)
   - I2S output
 
-The Tang Nano 9K hosts the GW1NR-9 which is a SIP (FPGA & PSRAM)
+The Tang Nano 9K hosts the GW1NR-9 which is an FPGA + PSRAM (SIP)
 - 9K LUTs (approx)
 - 468K BRAM
 - 20 18x18 multipliers (DSP)
@@ -50,10 +50,10 @@ The SOC provides a set of design specific MMIO modules:
 | ------ | ------- |
 | SRAM   | CPU SRAM (BRAM) |
 | VRAM   | Share Voice RAM |
-| APCR | Audio pipeline control |
+| APCR   | Audio pipeline control register |
 | TRACE  | Serial-tx module (used only for debug/trace) |
 | MIDI   | Serial-rx module (used only for MIDI in) |
-| GPO    | General purpose output (primarily on-board LED indicators)|
+| GPO    | General purpose output (debug and on-board LED indicators)|
 
 #### Software Architecture
 
@@ -80,7 +80,7 @@ The 24MHz clock is divided down to a 3MHz bit clock for the I2S peripheral.  Thi
 
 This error is within tolerance for most DACs and should be corrected for by the source unit generator (FCW).
 
-## Fixed Point Arithmetic Sizing
+## Fixed Point Arithmetic Porting
 
 | Signal | Range | Format | Notes |
 | ------ | ----- | ------ | ----- |
@@ -89,7 +89,8 @@ This error is within tolerance for most DACs and should be corrected for by the 
 | Control Rate Signals   | 0.0-1.0 | Q1.15 | Unipolar normalised |
 | User Parameters | 0-2^7 | uint8_t | MIDI CC (7-bit) values |
 
-Much of the code is ported from my MCU based template. This uses normalised floating point for all calculations as well as several math functions and employs a floating point unit.  The picorv32 has no floating point or math support at all.  
+Much of the code is ported from my MCU based template. This uses normalised floating point for all calculations as well as several math functions and employs a floating point unit.  The picorv32 is not suited to math, it has no floating point or math support at all.  
 
-Rather than create fixed point math functions (or approximations) I use Python to generate discrete lookup tables.  I sometimes use linear interpolation but continuous values are not musically important for the majority of synthesisers I build.
+Rather than create fixed point math functions (or approximations) I use Python to generate precomputed lookup tables. 
 
+The discrete values will change the characteristics of the synthesiser subtly however musically these are largely irrelevant, my floating point synths are all MIDI controlled so only calculate at 7-bit MIDI intervals so effectively discrete anyway.
