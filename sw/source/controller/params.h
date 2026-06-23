@@ -11,6 +11,19 @@
 #include "midi.h"
 #include "types.h"
 
+/*
+* A param_value_t is a 16-bit value which can contain a:
+*   Normalised value -1.0:1.0 (approx) [Q1.15]
+*   Index into an enum [uint8_t]
+*   Index into a LUT [uint8_t]
+*   An bipolar offset value [int8_t]
+*   A flag [bool]
+*
+* See: param_set_value_from_cc()
+*/
+typedef uint16_t param_value_t;
+
+
 enum param_mapping_type
 {
   PARAM_UNMAPPED,
@@ -126,29 +139,28 @@ enum voice_mode
 };
 
 /* Conversion helpers */
-
-static inline Q1_15 param_enum_from_cc(uint8_t value, uint8_t count)
+static inline param_value_t param_enum_from_cc(uint8_t value, uint8_t count)
 {
-    Q1_15 e = (uint8_t)(value * count / 128);
+    param_value_t e = (uint16_t)(value * count / 128);
     return e < count ? e : count - 1;  /* clamp */
 }
 
-static inline Q1_15 param_linear_to_uni(uint8_t value, uint8_t minv, uint8_t maxv)
+static inline param_value_t param_cc7bit_to_uni(uint8_t value)
 {
-  Q1_15 e = (uint8_t)(value-minv)/(maxv-minv);
+  return (param_value_t)((uint16_t)value * Q15_ONE / 127);
 }
 
-static inline Q1_15 param_cc7bit_to_uni(uint8_t value)
+static inline param_value_t param_cc7bit_to_bipolar(uint8_t value, int8_t range)
 {
-  return (uint8_t)value * (Q15_ONE / 127);
+  return (param_value_t)(int8_t)(((int16_t)value - 64) * range / 64);
 }
 
 
 
 /* API */
 void param_init();
-enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, Q1_15 params[]);
-void param_create_default_patch(Q1_15 params[]);
+enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, param_value_t params[]);
+void param_create_default_patch(param_value_t params[]);
 
 
 #endif /* __PARAMS_H__ */

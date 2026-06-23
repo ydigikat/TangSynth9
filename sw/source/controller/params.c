@@ -87,7 +87,7 @@ void param_init()
  * Parameter values are 16-bit wide and can hold either a value or an
  * index into a LUT.
  */
-enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, Q1_15 params[])
+enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, param_value_t params[])
 {
   uint8_t param_id = param_map[cc];
 
@@ -96,7 +96,7 @@ enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, Q1_15
     return PARAM_UNMAPPED;
   }
 
-  switch (cc)
+  switch (param_id)
   {
   // ---------------------------------------------------
   // On/Of switches
@@ -148,18 +148,18 @@ enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, Q1_15
   // Bipolar linear controls
   // ---------------------------------------------------
   case OSC1_OCTAVE:
-  case OSC2_OCTAVE:
-    // -2:2
+  case OSC2_OCTAVE:    
+    params[param_id] = param_cc7bit_to_bipolar(value, 2);
     break;
 
   case OSC1_SEMI:
-  case OSC2_SEMI:
-    // -6:6
+  case OSC2_SEMI:    
+    params[param_id] = param_cc7bit_to_bipolar(value, 6);
     break;
 
   case OSC1_CENTS:
-  case OSC2_CENTS:
-    // -12:12
+  case OSC2_CENTS:     
+    params[param_id] = param_cc7bit_to_bipolar(value, 50);
     break;
 
   // ---------------------------------------------------
@@ -202,4 +202,10 @@ enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, Q1_15
   // TRACE_PRINT_DEC("VAL:",value)
 
   return param_id < VOICE_PARAM_COUNT ? PARAM_VOICE : PARAM_GLOBAL;
+}
+
+
+void param_create_default_patch(param_value_t params[])
+{
+  
 }

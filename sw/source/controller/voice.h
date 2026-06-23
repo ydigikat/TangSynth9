@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include "types.h"
+#include "params.h"
 #include "env.h"
 
 enum voice_state
@@ -27,7 +28,7 @@ struct voice
   uint8_t vel, steal_vel;
 
   /* Parameters */
-  const Q1_15 *params;
+  const param_value_t *params;
 
   /* Normalised values */
   Q1_15 pitch, steal_pitch;
@@ -41,7 +42,7 @@ struct voice
 };
 
 /* API */
-void voice_init(struct voice *voice, const Q1_15 *restrict params);
+void voice_init(struct voice *voice, const param_value_t *restrict params);
 void voice_reset(struct voice *voice);
 void voice_calculate(struct voice *voice);
 void voice_update(struct voice *voice);

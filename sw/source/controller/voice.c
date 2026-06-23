@@ -37,7 +37,7 @@ static void (*voice_state_handlers[])(struct voice *voice) = {voice_state_idle,
                                                               voice_state_active,
                                                               voice_state_stealing};
 
-void voice_init(struct voice *voice, const Q1_15 *restrict params)
+void voice_init(struct voice *voice, const param_value_t *restrict params)
 {
   // TRACE_ASSERT(voice);
   // TRACE_ASSERT(params);

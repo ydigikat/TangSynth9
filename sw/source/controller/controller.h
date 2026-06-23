@@ -19,7 +19,7 @@ struct controller
   uint8_t midi_channel;
 
   struct voice voice[MAX_VOICES];
-  Q1_15  params[VOICE_PARAM_COUNT];
+  param_value_t  params[VOICE_PARAM_COUNT];
 };
 
 /* API */
