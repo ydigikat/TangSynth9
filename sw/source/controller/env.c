@@ -60,7 +60,7 @@ void env_reset(struct env *env)
  * table indexed on envelope state.  It then applies a transform which
  * uses another function jump table indexed by the envelope mode.
  */
-void env_render(struct env *env, Q1_15 *output)
+void env_render(struct env *env, SQ1_15 *output)
 {
   env_state_handlers[env->state](env);
   *output = env_transforms[env->mode](env->level, env->sustain);

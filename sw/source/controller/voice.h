@@ -9,6 +9,7 @@
 #include "types.h"
 #include "params.h"
 #include "env.h"
+#include "lfo.h"
 
 enum voice_state
 {
@@ -27,6 +28,10 @@ struct voice
   uint8_t note, steal_note;
   uint8_t vel, steal_vel;
 
+  /* Modulator values */
+  SQ1_15 mod_value[MOD_SOURCE_COUNT];
+
+
   /* Parameters */
   const param_value_t *params;
 
@@ -39,6 +44,7 @@ struct voice
   /* Modulators */
   struct env amp_env;
   struct env mod_env;
+  struct lfo lfo1;
 };
 
 /* API */

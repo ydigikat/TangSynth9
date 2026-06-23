@@ -30,6 +30,7 @@ void controller_init(struct controller *controller)
   controller->midi_channel = MIDI_OMNI;
 
   param_init();
+  param_create_default_patch(controller->params);
 
   for (int i = 0; i < MAX_VOICES; i++)
   {

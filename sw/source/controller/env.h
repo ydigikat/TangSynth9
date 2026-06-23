@@ -37,20 +37,22 @@ enum env_state
 
 struct env
 {
-  /* Params - raw 7-bit MIDI values, no conversion stored */
+  /* Params - table index */
   uint8_t attack;          /* 0-127 */
-  uint8_t decay;           /* 0-127 */
-  Q1_15   sustain;         /* Q1.15 unipolar, 0.0-1.0 - this one IS a level, not a time */
+  uint8_t decay;           /* 0-127 */  
   uint8_t release;         /* 0-127 */
+
+  SQ1_15   sustain;         /* Q1.15 normalised value */
+  
   uint8_t mode;            /* enum env_mode */
-  bool    note_track;
+  bool    note_track;     
   bool    velocity_track;
 
   /* State */
   enum env_state state;
-  Q1_15   level;            /* Q1.15, current envelope output */
+  SQ1_15   level;            /* current envelope output */
 
-  /* Coefficients looked up from LUT at update time (not recalculated per-block) */
+  /* Coefficients looked up at update time (not per-block) */
   Q1_15   attack_coeff;
   Q1_15   decay_coeff;
   Q1_15   release_coeff;
@@ -62,9 +64,9 @@ struct env
    * The Decay_overshoot depends on `sustain`, so it's uses the env_decay_overshoot_base_lut[decay] 
    * plus one Q15 multiply, done once when parms are updated. 
   */
-  int16_t attack_overshoot;   /* always >= 0 */
-  int16_t decay_overshoot;    /* typically negative (falling toward sustain) */
-  int16_t release_overshoot;  /* always <= 0 */
+  SQ1_15 attack_overshoot;   /* always >= 0 */
+  SQ1_15 decay_overshoot;    /* negative (falling toward sustain) */
+  SQ1_15 release_overshoot;  /* always <= 0 */
 
   /* RTZ / shutdown ramp */
   int16_t inc_shutdown;       /* signed Q1.15 per-block decrement */
@@ -73,7 +75,7 @@ struct env
 /* API */
 void env_init(struct env *env);
 void env_reset(struct env *env);
-void env_render(struct env *env, Q1_15 *output);
+void env_render(struct env *env, SQ1_15 *output);
 void env_note_on(struct env *env, uint8_t midi_note, uint8_t midi_velocity);
 void env_note_off(struct env *env);
 void env_rtz(struct env *env);

@@ -23,7 +23,6 @@
 */
 typedef uint16_t param_value_t;
 
-
 enum param_mapping_type
 {
   PARAM_UNMAPPED,

@@ -26,9 +26,6 @@ static void voice_state_active(struct voice *voice);
 static void voice_state_stealing(struct voice *voice);
 
 /* Modulators */
-static void voice_init_modulators(struct voice *voice);
-static void voice_start_modulators(struct voice *voice);
-static void voice_stop_modulators(struct voice *voice);
 static void voice_calculate_modulators(struct voice *voice);
 static void voice_update_modulators(struct voice *voice);
 
@@ -44,7 +41,10 @@ void voice_init(struct voice *voice, const param_value_t *restrict params)
 
   voice->params = params;
   voice_reset(voice);
-  voice_init_modulators(voice);
+
+  env_init(&voice->amp_env);
+  env_init(&voice->mod_env);
+  lfo_init(&voice->lfo1);  
 }
 
 void voice_reset(struct voice *voice)
@@ -96,7 +96,7 @@ void voice_calculate(struct voice *voice)
  */
 void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity)
 {
-  TRACE_ASSERT(voice);
+  // TRACE_ASSERT(voice);
 
   switch (voice->state)
   {
@@ -121,7 +121,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
       return;
     }
 
-    // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_STEAL_RTZ:",voice->idx);    
+    // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_STEAL_RTZ:",voice->idx);
     voice->steal_pitch = midi_fcw_lut[midi_note];
     voice->steal_note = midi_note;
     voice->steal_vel = midi_velocity;
@@ -148,8 +148,8 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
  * voice that is not active so we assert if that happens.
  */
 void voice_note_off(struct voice *voice)
-{    
-  TRACE_ASSERT(voice);
+{
+  // TRACE_ASSERT(voice);
   // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_RELEASE:",voice->idx);
   voice->event_flags |= VOICE_EVENT_RELEASE;
 }
@@ -167,7 +167,7 @@ void voice_note_off(struct voice *voice)
  */
 void voice_update(struct voice *voice)
 {
-   voice->event_flags |= VOICE_EVENT_UPDATE;
+  voice->event_flags |= VOICE_EVENT_UPDATE;
 }
 
 /*
@@ -181,8 +181,8 @@ void voice_update(struct voice *voice)
  */
 static void voice_state_idle(struct voice *voice)
 {
-   if (voice->event_flags & VOICE_EVENT_UPDATE)
-  {    
+  if (voice->event_flags & VOICE_EVENT_UPDATE)
+  {
     // TRACE_PRINT_DEC("NoteOn:VOICE_UPDATE(IDLE):",voice->idx);
     voice_update_modulators(voice);
     voice->event_flags &= ~VOICE_EVENT_UPDATE;
@@ -209,24 +209,24 @@ static void voice_state_idle(struct voice *voice)
 static void voice_state_active(struct voice *voice)
 {
   if (voice->event_flags & VOICE_EVENT_UPDATE)
-  {    
+  {
     voice_update_modulators(voice);
     voice->event_flags &= ~VOICE_EVENT_UPDATE;
   }
 
   if (voice->event_flags & VOICE_EVENT_START)
-  {   
-    /* New note, start the modulators, set envelopes to ATTACK state */
-    voice_start_modulators(voice);
+  {
+    /* New note, start the LFO, set envelopes to ATTACK state */
+    lfo_note_on(&voice->lfo1);
     env_note_on(&voice->amp_env, voice->note, voice->vel);
 
     voice->event_flags &= ~VOICE_EVENT_START;
   }
 
   if (voice->event_flags & VOICE_EVENT_RETRIGGER)
-  {  
+  {
     // TRACE_PRINT_DEC("VOICE_EVENT_RETRIGGER:",voice->idx);
-    /* Retrigger by setting the envelope to ATTACK state */    
+    /* Retrigger by setting the envelope to ATTACK state */
     env_note_on(&voice->amp_env, voice->note, voice->vel);
 
     voice->event_flags &= ~VOICE_EVENT_RETRIGGER;
@@ -235,22 +235,20 @@ static void voice_state_active(struct voice *voice)
   if (voice->event_flags & VOICE_EVENT_RELEASE)
   {
     // TRACE_PRINT_DEC("VOICE_EVENT_RELEASE:",voice->idx);
-    
-    /* 
+
+    /*
      * End the note by setting the envelope to RELEASE state, note that we are not ending the
      * modulators here as the voice may have a release phase and need to 'ring out'. We handle
-     * the ENV_OFF state as a separate state 
+     * the ENV_OFF state as a separate state
      */
-    
+
     env_note_off(&voice->amp_env);
     voice->event_flags &= ~VOICE_EVENT_RELEASE;
   }
 
-  
   if (voice->amp_env.state == ENV_OFF)
   {
-    // TRACE_PRINT_DEC("ENV_OFF->IDLE:",voice->idx);    
-    voice_stop_modulators(voice);   
+    // TRACE_PRINT_DEC("ENV_OFF->IDLE:",voice->idx);
     voice->state = VOICE_IDLE;
     voice->event_flags = VOICE_EVENT_NONE;
 
@@ -285,19 +283,19 @@ static void voice_state_active(struct voice *voice)
  */
 static void voice_state_stealing(struct voice *voice)
 {
-   if (voice->event_flags & VOICE_EVENT_UPDATE)
+  if (voice->event_flags & VOICE_EVENT_UPDATE)
   {
     voice_update_modulators(voice);
     voice->event_flags &= ~VOICE_EVENT_UPDATE;
   }
 
   if (voice->event_flags & VOICE_EVENT_STEAL_RTZ)
-  {    
+  {
     // TRACE_PRINT_DEC("VOICE_EVENT_STEAL_RTZ:",voice->idx);
     env_rtz(&voice->amp_env);
     voice->event_flags &= ~VOICE_EVENT_STEAL_RTZ;
   }
-  
+
   if (voice->amp_env.state == ENV_OFF)
   {
     // TRACE_PRINT_DEC("ENV_OFF(RTZ):",voice->idx);
@@ -314,14 +312,6 @@ static void voice_state_stealing(struct voice *voice)
   voice_calculate_modulators(voice);
 }
 
-/*
- * Initialises the state of the modulators.
- */
-static void voice_init_modulators(struct voice *voice)
-{
-  env_init(&voice->amp_env);
-  env_init(&voice->mod_env);
-}
 
 /*
  * Calculates the current modulator values.
@@ -330,8 +320,12 @@ static void voice_init_modulators(struct voice *voice)
  */
 static void voice_calculate_modulators(struct voice *voice)
 {
-  // TODO: NYI
-  // env_render(&voice->amp_env, &voice->modulators[ENV1_LEVEL]);
+
+  env_render(&voice->amp_env, &voice->mod_value[AMP_LEVEL]);
+  env_render(&voice->mod_env, &voice->mod_value[ENV1_LEVEL]);
+  lfo_render(&voice->lfo1, &voice->mod_value[LFO1_TRI], &voice->mod_value[LFO1_SAW],
+             &voice->mod_value[LFO1_RAMP], &voice->mod_value[LFO1_SQUARE],
+             &voice->mod_value[LFO1_SANDH]);
 }
 
 /*
@@ -351,27 +345,15 @@ static void voice_calculate_modulators(struct voice *voice)
  * SYNTH division in the mappings is handled already.
  */
 static void voice_update_modulators(struct voice *voice)
-{    
-  // TODO Params need to be implemented 
-//   env_update(&voice->amp_env, voice->params[AMP_ATTACK], voice->params[AMP_DECAY],
-//              voice->params[AMP_SUSTAIN], voice->params[AMP_RELEASE], ENV_NORMAL,
-//              voice->params[AMP_NOTE_TRACK], voice->params[AMP_VELOCITY_TRACK]);
-// 
-}
-
-void voice_start_modulators(struct voice *voice)
 {
-  // TODO: LFOs only need to be started.
-}
+  env_update(&voice->amp_env, voice->params[AMP_ATTACK], voice->params[AMP_DECAY],
+             voice->params[AMP_SUSTAIN], voice->params[AMP_RELEASE], ENV_NORMAL,
+             voice->params[AMP_NOTE_TRACK], voice->params[AMP_VEL_TRACK]);
 
-/**
- * \brief stops the modulators
- *
- * Not all modules require this notification, only those with a matching
- * note_on call will have a note_off.
- */
-void voice_stop_modulators(struct voice *voice)
-{
-  // TODO: LFOs only need to be stopped.
+  env_update(&voice->mod_env, voice->params[ENV1_ATTACK], voice->params[ENV1_DECAY],
+             voice->params[ENV1_SUSTAIN], voice->params[ENV1_RELEASE], voice->params[ENV1_MODE],
+             voice->params[ENV1_NOTE_TRACK], voice->params[ENV1_VEL_TRACK]);
+
+  lfo_update(&voice->lfo1, voice->params[LFO1_RATE], voice->params[LFO1_MODE]);
 }
 

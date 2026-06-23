@@ -148,17 +148,17 @@ enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, param
   // Bipolar linear controls
   // ---------------------------------------------------
   case OSC1_OCTAVE:
-  case OSC2_OCTAVE:    
+  case OSC2_OCTAVE:
     params[param_id] = param_cc7bit_to_bipolar(value, 2);
     break;
 
   case OSC1_SEMI:
-  case OSC2_SEMI:    
+  case OSC2_SEMI:
     params[param_id] = param_cc7bit_to_bipolar(value, 6);
     break;
 
   case OSC1_CENTS:
-  case OSC2_CENTS:     
+  case OSC2_CENTS:
     params[param_id] = param_cc7bit_to_bipolar(value, 50);
     break;
 
@@ -204,8 +204,63 @@ enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, param
   return param_id < VOICE_PARAM_COUNT ? PARAM_VOICE : PARAM_GLOBAL;
 }
 
-
+/*
+ * Creates a default patch, this is a gated, detuned
+ * sawtooth with no filtering.
+ */
 void param_create_default_patch(param_value_t params[])
 {
-  
+  params[AMP_LEVEL] = Q15_ONE;
+  params[AMP_MOD_DEPTH] = 0;
+  params[AMP_MOD_SOURCE] = 0;
+
+  params[AMP_ATTACK] = 0;
+  params[AMP_DECAY] = 0;
+  params[AMP_SUSTAIN] = Q15_ONE;
+  params[AMP_RELEASE] = 0;
+  params[AMP_NOTE_TRACK] = false;
+  params[AMP_VEL_TRACK] = false;
+
+  params[OSC1_WAVE] = OSC_SAW;
+  params[OSC1_LEVEL] = Q15_HALF;
+  params[OSC1_OCTAVE] = 0;
+  params[OSC1_SEMI] = 0;
+  params[OSC1_CENTS] = 0;
+  params[OSC1_PW] = Q15_ONE;
+  params[OSC1_MOD_DEPTH] = 0;
+  params[OSC1_MOD_SOURCE] = 0;
+
+  params[OSC2_WAVE] = OSC_SAW;
+  params[OSC2_LEVEL] = Q15_HALF;
+  params[OSC2_OCTAVE] = 1;
+  params[OSC2_SEMI] = 0;
+  params[OSC2_CENTS] = 10;
+  params[OSC2_PW] = Q15_ONE;
+  params[OSC2_MOD_DEPTH] = 0;
+  params[OSC2_MOD_SOURCE] = 0;
+
+  params[ENV1_MODE] = ENV_NORMAL;
+  params[ENV1_ATTACK] = 0;
+  params[ENV1_DECAY] = 0;
+  params[ENV1_SUSTAIN] = Q15_ONE;
+  params[ENV1_RELEASE] = 0;
+  params[ENV1_NOTE_TRACK] = false;
+  params[ENV1_VEL_TRACK] = false;
+
+  params[LFO1_RATE] = 0;
+  params[LFO1_MODE] = LFO_MODE_NOTE;
+
+  params[GL_AMOUNT] = 0;
+  params[GL_TIME] = 0;
+
+  params[FILT_CUTOFF] = 127;
+  params[FILT_RES] = 0;
+  params[FILT_KEY_TRACK] = false;
+  params[FILT_MOD_DEPTH] = 0;
+  params[FILT_MOD_SOURCE] = 0;
+
+  params[SYNTH_VOICE_MODE] = VOICE_MODE_POLY;
+  params[SYNTH_PORTAMENTO_TIME] = 0;
+  params[SYNTH_PORTAMENTO_ON] = false;
+  params[SYNTH_UNISON_DETUNE] = 0;
 }
