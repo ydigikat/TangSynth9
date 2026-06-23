@@ -142,10 +142,10 @@ def generate_env_tables():
 
     return {
         "env_attack_coeff_lut": (attack_coeff, "Q1_15", None),
-        "env_attack_overshoot_lut": (attack_overshoot, "Q1_15", None),
+        "env_attack_overshoot_lut": (attack_overshoot, "SQ1_15", None),
         "env_decay_coeff_lut": (decay_coeff, "Q1_15", None),
-        "env_decay_overshoot_base_lut": (decay_overshoot_base_truncated, "int16_t", decay_cutoff),
-        "env_release_overshoot_lut": (release_overshoot_truncated, "int16_t", release_cutoff),
+        "env_decay_overshoot_base_lut": (decay_overshoot_base_truncated, "SQ1_15", decay_cutoff),
+        "env_release_overshoot_lut": (release_overshoot_truncated, "SQ1_15", release_cutoff),
     }
 
 # Generates the MIDI note -> FCW (phase increment) table.
@@ -156,7 +156,7 @@ def generate_freq_table():
         fcw_table.append(freq_hz_to_fcw(freq_hz))
 
     return {
-        "midi_fcw_lut": (fcw_table, "uint32_t", None)
+        "midi_fcw_lut": (fcw_table, "Q24_0", None)
     }
 
 # Generates a generic exponential curve table used for non-linear controls

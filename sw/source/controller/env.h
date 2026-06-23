@@ -19,8 +19,6 @@
 * coefficients are precomputed for all 128 MIDI control values by a Python script
 * and stored in lookup tables.  The max segment time is 8s.
 *
-* All coefficients/overshoots are Q15.1 (unsigned) representing a normalised float.  
-*
 * There is a single software division left in the RTZ path which is only called once
 * during a voice steal event so the divide is an acceptable cost.
 */
@@ -69,7 +67,7 @@ struct env
   SQ1_15 release_overshoot;  /* always <= 0 */
 
   /* RTZ / shutdown ramp */
-  int16_t inc_shutdown;       /* signed Q1.15 per-block decrement */
+  SQ1_15 inc_shutdown;       /* signed Q1.15 per-block decrement */
 };
 
 /* API */
@@ -79,7 +77,7 @@ void env_render(struct env *env, SQ1_15 *output);
 void env_note_on(struct env *env, uint8_t midi_note, uint8_t midi_velocity);
 void env_note_off(struct env *env);
 void env_rtz(struct env *env);
-void env_update(struct env *env, uint8_t attack, uint8_t decay, Q1_15 sustain, uint8_t release,
+void env_update(struct env *env, uint8_t attack, uint8_t decay, SQ1_15 sustain, uint8_t release,
                 uint8_t mode, bool note_track, bool velocity_track);
 
 

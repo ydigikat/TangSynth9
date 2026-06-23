@@ -53,10 +53,10 @@ void voice_reset(struct voice *voice)
 
   voice->note = 0;
   voice->vel = 0;
-  voice->pitch = 0;
+  voice->fcw = 0;
   voice->steal_note = 0;
   voice->steal_vel = 0;
-  voice->steal_pitch = 0;
+  voice->steal_fcw = 0;
   voice->state = VOICE_IDLE;
   voice->event_flags = VOICE_EVENT_NONE;
   voice->age = 0;
@@ -106,7 +106,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
 
     voice->note = midi_note;
     voice->vel = midi_velocity;
-    voice->pitch = midi_fcw_lut[midi_note];
+    voice->fcw = midi_fcw_lut[midi_note];
     voice->event_flags |= VOICE_EVENT_START;
     voice->state = VOICE_ACTIVE;
     break;
@@ -122,7 +122,7 @@ void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity
     }
 
     // TRACE_PRINT_DEC("NoteOn:VOICE_EVENT_STEAL_RTZ:",voice->idx);
-    voice->steal_pitch = midi_fcw_lut[midi_note];
+    voice->steal_fcw = midi_fcw_lut[midi_note];
     voice->steal_note = midi_note;
     voice->steal_vel = midi_velocity;
     voice->state = VOICE_STEALING;
@@ -301,7 +301,7 @@ static void voice_state_stealing(struct voice *voice)
     // TRACE_PRINT_DEC("ENV_OFF(RTZ):",voice->idx);
     voice->note = voice->steal_note;
     voice->vel = voice->steal_vel;
-    voice->pitch = voice->steal_pitch;
+    voice->fcw = voice->steal_fcw;
     voice->event_flags |= VOICE_EVENT_START;
     voice->state = VOICE_ACTIVE;
 

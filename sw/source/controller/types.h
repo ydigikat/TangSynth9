@@ -6,13 +6,17 @@
 
 #include <stdint.h>
 
-#define Q15_ONE     ((Q1_15)0x7FFF)    /* approx 0.99997, max representable Q1.15 */
-#define Q15_HALF    ((Q1_15)0x3FFF)    /* approx 0.5 */
-#define Q15_NEG_ONE ((Q1_15)0xFFFF)    /* -1.0 */
+#define Q15_ONE ((Q1_15)0x7FFF)    /* approx 0.99997, max representable Q1.15 */
 #define Q15_SHIFT (15)
 
-typedef uint16_t Q1_15;
+#define SQ15_ONE ((SQ1_15)0x7FFF)
+#define SQ15_NEG_ONE ((SQ1_15)-0x7FFF)
+#define SQ15_HALF ((SQ1_15)0x3FFF)
+
+
+typedef uint16_t Q1_15;     
 typedef int16_t SQ1_15;
+typedef uint32_t Q24_0;
 typedef uint32_t Q1_24;
 
  /*

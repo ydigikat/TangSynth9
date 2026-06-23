@@ -35,11 +35,13 @@ struct voice
   /* Parameters */
   const param_value_t *params;
 
-  /* Normalised values */
-  Q1_15 pitch, steal_pitch;
-  Q1_15 amp_eg_lvl;
-  Q1_15 mod_eg_lvl;
-  Q1_15 lfo_lvl;
+  /* FCW 24-bit (pitch)*/
+  Q24_0 fcw, steal_fcw; 
+
+  /* Normalised values */  
+  SQ1_15 amp_eg_lvl;
+  SQ1_15 mod_eg_lvl;
+  SQ1_15 lfo_lvl;
 
   /* Modulators */
   struct env amp_env;

@@ -21,10 +21,10 @@ static void env_state_release(struct env *env);
 static void env_state_shutdown(struct env *env);
 
 /* Output transformations */
-static Q1_15 env_mode_normal(Q1_15 level, Q1_15 sustain);
-static Q1_15 env_mode_biased(Q1_15 level, Q1_15 sustain);
-static Q1_15 env_mode_inverted(Q1_15 level, Q1_15 sustain);
-static Q1_15 env_mode_biased_inverted(Q1_15 level, Q1_15 sustain);
+static SQ1_15 env_mode_normal(SQ1_15 level, SQ1_15 sustain);
+static SQ1_15 env_mode_biased(SQ1_15 level, SQ1_15 sustain);
+static SQ1_15 env_mode_inverted(SQ1_15 level, SQ1_15 sustain);
+static SQ1_15 env_mode_biased_inverted(SQ1_15 level, SQ1_15 sustain);
 
 /* State handler jump table */
 static void (*env_state_handlers[ENV_MAX])(struct env *env) = {
@@ -32,7 +32,7 @@ static void (*env_state_handlers[ENV_MAX])(struct env *env) = {
     env_state_sustain, env_state_release, env_state_shutdown};
 
 /* Output transform functions, jump table */
-static Q1_15 (*env_transforms[])(Q1_15 level, Q1_15 sustain) = {
+static SQ1_15 (*env_transforms[])(SQ1_15 level, SQ1_15 sustain) = {
     env_mode_normal, env_mode_biased, env_mode_inverted, env_mode_biased_inverted};
 
 
@@ -70,7 +70,7 @@ void env_render(struct env *env, SQ1_15 *output)
 /*
  * Calc segment curves and start the envelope state machine
  *
- * The attack and decay are scaled by velocity/pitch if tracking is enabled, a higher
+ * The attack and decay are scaled by velocity/fcw if tracking is enabled, a higher
  * velocity/note reduces the attack/decay time as you might expect from a piano.  
  */
 void env_note_on(struct env *env, uint8_t midi_note, uint8_t midi_velocity)
@@ -125,7 +125,7 @@ void env_rtz(struct env *env)
  * Updates internal state following a parameter change. This uses a linear
  * mapping rather than a power curve for the parameter values.
  */
-void env_update(struct env *env, uint8_t attack, uint8_t decay, Q1_15 sustain, uint8_t release,
+void env_update(struct env *env, uint8_t attack, uint8_t decay, SQ1_15 sustain, uint8_t release,
                 uint8_t mode, bool note_track, bool velocity_track)
 {
   env->attack  = attack;
@@ -262,27 +262,27 @@ static void env_state_shutdown(struct env *env)
 }
 
 /* output transformer, this is used for a normal envelope */
-static Q1_15 env_mode_normal(Q1_15 level, Q1_15 sustain)
+static SQ1_15 env_mode_normal(SQ1_15 level, SQ1_15 sustain)
 {
   (void)sustain;
   return level;
 }
 
-/* output transformer, this is used for a biased envelope (usually pitch) */
-static Q1_15 env_mode_biased(Q1_15 level, Q1_15 sustain)
+/* output transformer, this is used for a biased envelope (usually fcw) */
+static SQ1_15 env_mode_biased(SQ1_15 level, SQ1_15 sustain)
 {
-  return (Q1_15)((int16_t)level - (int16_t)sustain);
+  return (SQ1_15)((int16_t)level - (int16_t)sustain);
 }
 
 /* output transformer, this is used for a inverted envelope */
-static Q1_15 env_mode_inverted(Q1_15 level, Q1_15 sustain)
+static SQ1_15 env_mode_inverted(SQ1_15 level, SQ1_15 sustain)
 {
   (void)sustain;
-  return (Q1_15)(Q15_ONE - level);
+  return (SQ1_15)(SQ15_ONE - level);
 }
 
 /* output transformer, this is used for a biased and inverted envelope */
-static Q1_15 env_mode_biased_inverted(Q1_15 level, Q1_15 sustain)
+static SQ1_15 env_mode_biased_inverted(SQ1_15 level, SQ1_15 sustain)
 {
-  return (Q1_15)((Q15_ONE - level) - sustain);
+  return (SQ1_15)((SQ15_ONE - level) - sustain);
 }

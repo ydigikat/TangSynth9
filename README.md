@@ -85,8 +85,8 @@ This error is within tolerance for most DACs and should be corrected for by the 
 | Signal | Range | Format | Notes |
 | ------ | ----- | ------ | ----- |
 | Phase Acc | 0-2^24 | uint32_t | Counter - no fraction |
-| FCW  | 0-Fs/2 | uint32_t | Derivative of Phase Acc width |
-| Control Rate Signals   | 0.0-1.0 | Q1.15 | Unipolar normalised |
+| FCW  | 0-2^24 | uint32_t | Derivative of Phase Acc width |
+| Control Rate Signals   | -1.0 : ~1.0 | SQ1.15 | Bipolar normalised |
 | User Parameters | 0-2^7 | uint8_t | MIDI CC (7-bit) values |
 
 Much of the code is ported from my MCU based template. This uses normalised floating point for all calculations as well as several math functions and employs a floating point unit.  The picorv32 is not suited to math, it has no floating point or math support at all.  

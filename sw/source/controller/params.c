@@ -210,19 +210,19 @@ enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, param
  */
 void param_create_default_patch(param_value_t params[])
 {
-  params[AMP_LEVEL] = Q15_ONE;
+  params[AMP_LEVEL] = SQ15_ONE;
   params[AMP_MOD_DEPTH] = 0;
   params[AMP_MOD_SOURCE] = 0;
 
   params[AMP_ATTACK] = 0;
   params[AMP_DECAY] = 0;
-  params[AMP_SUSTAIN] = Q15_ONE;
+  params[AMP_SUSTAIN] = SQ15_ONE;
   params[AMP_RELEASE] = 0;
   params[AMP_NOTE_TRACK] = false;
   params[AMP_VEL_TRACK] = false;
 
   params[OSC1_WAVE] = OSC_SAW;
-  params[OSC1_LEVEL] = Q15_HALF;
+  params[OSC1_LEVEL] = SQ15_HALF;
   params[OSC1_OCTAVE] = 0;
   params[OSC1_SEMI] = 0;
   params[OSC1_CENTS] = 0;
@@ -231,18 +231,18 @@ void param_create_default_patch(param_value_t params[])
   params[OSC1_MOD_SOURCE] = 0;
 
   params[OSC2_WAVE] = OSC_SAW;
-  params[OSC2_LEVEL] = Q15_HALF;
+  params[OSC2_LEVEL] = SQ15_HALF;
   params[OSC2_OCTAVE] = 1;
   params[OSC2_SEMI] = 0;
   params[OSC2_CENTS] = 10;
-  params[OSC2_PW] = Q15_ONE;
+  params[OSC2_PW] = SQ15_ONE;
   params[OSC2_MOD_DEPTH] = 0;
   params[OSC2_MOD_SOURCE] = 0;
 
   params[ENV1_MODE] = ENV_NORMAL;
   params[ENV1_ATTACK] = 0;
   params[ENV1_DECAY] = 0;
-  params[ENV1_SUSTAIN] = Q15_ONE;
+  params[ENV1_SUSTAIN] = SQ15_ONE;
   params[ENV1_RELEASE] = 0;
   params[ENV1_NOTE_TRACK] = false;
   params[ENV1_VEL_TRACK] = false;
