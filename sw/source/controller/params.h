@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "midi.h"
+#include "types.h"
 
 enum param_mapping_type
 {
@@ -23,6 +24,7 @@ enum param_id
   AMP_LEVEL,     
   AMP_MOD_SOURCE,
   AMP_MOD_DEPTH,
+
   AMP_ATTACK,
   AMP_DECAY,
   AMP_SUSTAIN,
@@ -53,6 +55,8 @@ enum param_id
   ENV1_DECAY,
   ENV1_SUSTAIN,
   ENV1_RELEASE,
+  ENV1_NOTE_TRACK,
+  ENV1_VEL_TRACK,
 
   LFO1_RATE,
   LFO1_MODE,
@@ -60,9 +64,14 @@ enum param_id
   GL_AMOUNT,
   GL_TIME,
 
+  FILT_CUTOFF,
+  FILT_RES,
+  FILT_KEY_TRACK,
+  FILT_MOD_SOURCE,
+  FILT_MOD_DEPTH,
+
   /* End of voice params marker */
   VOICE_PARAM_COUNT,
-
 
   /* Global parameters */
   SYNTH_VOICE_MODE,
@@ -96,9 +105,8 @@ enum mod_source
   LFO1_SAW,
   LFO1_RAMP,
   LFO1_SQUARE,
-  LFO1_SANDH,
-  ENV1_LEVEL,
-
+  LFO1_SANDH,  
+  ENV1_LEVEL,  
   MOD_SOURCE_COUNT
 };
 
@@ -117,10 +125,30 @@ enum voice_mode
   VOICE_MODE_COUNT
 };
 
+/* Conversion helpers */
+
+static inline Q1_15 param_enum_from_cc(uint8_t value, uint8_t count)
+{
+    Q1_15 e = (uint8_t)(value * count / 128);
+    return e < count ? e : count - 1;  /* clamp */
+}
+
+static inline Q1_15 param_linear_to_uni(uint8_t value, uint8_t minv, uint8_t maxv)
+{
+  Q1_15 e = (uint8_t)(value-minv)/(maxv-minv);
+}
+
+static inline Q1_15 param_cc7bit_to_uni(uint8_t value)
+{
+  return (uint8_t)value * (Q15_ONE / 127);
+}
+
+
+
 /* API */
-void param_load_factory_patch();
-void param_init(float params[]);
-enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, float params[]);
-void param_create_default_patch(float params[]);
+void param_init();
+enum param_mapping_type param_set_value_from_cc(uint8_t cc, uint8_t value, Q1_15 params[]);
+void param_create_default_patch(Q1_15 params[]);
+
 
 #endif /* __PARAMS_H__ */

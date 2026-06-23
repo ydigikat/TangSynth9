@@ -18,6 +18,7 @@ set(SRCS_APP
   ${SRC_DIR}/controller/voice.c
   ${SRC_DIR}/controller/env.c    
   ${SRC_DIR}/controller/luts.c    
+  ${SRC_DIR}/controller/params.c   
 )
 
 set(INCL_APP ${SRC_DIR} ${SRC_DIR}/controller)

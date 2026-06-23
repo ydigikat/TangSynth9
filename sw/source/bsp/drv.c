@@ -31,7 +31,7 @@ static void putchar_blocking(TRACE_t *restrict trace, char c)
 }
 
 static void print_str(TRACE_t *restrict trace, const char *s)
-{
+{  
   while (*s)
   {
     if (*s == '\n')
@@ -69,7 +69,7 @@ static void print_dec(TRACE_t *restrict trace, uint32_t val)
 }
 
 void trace_str(TRACE_t *restrict trace, const char *s)
-{
+{  
   print_str(trace, s);
   putchar_blocking(trace, '\n');
   putchar_blocking(trace, '\r');

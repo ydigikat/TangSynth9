@@ -4,6 +4,11 @@
 
 #include "midi.h"
 
+#ifdef TRACE_ENABLED
+#include "drv.h"
+static const char *TRACE_FILE = "midi.c";
+#endif
+
 #define IS_STATUS_BYTE(__BYTE__) ((__BYTE__ >> 7) == 0x1)
 #define IS_REAL_TIME(__BYTE__) ((__BYTE__ >> 3) == 0x1f)
 #define IS_SINGLE_BYTE_MSG(__BYTE__) ((__BYTE__ >> 2) == 0x3D)

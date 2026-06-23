@@ -4,6 +4,7 @@
  */
 
 #include "controller.h"
+#include "params.h"
 #include "drv.h"
 
 #ifdef TRACE_ENABLED
@@ -27,6 +28,8 @@ static inline void age_voices(struct controller *controller);
 void controller_init(struct controller *controller)
 {
   controller->midi_channel = MIDI_OMNI;
+
+  param_init();
 
   for (int i = 0; i < MAX_VOICES; i++)
   {

@@ -6,15 +6,14 @@
 
 #include <stdint.h>
 
-typedef uint16_t Q1_15;
-typedef uint32_t Q1_24;
-
 #define Q15_ONE   ((Q1_15)0x7FFF)  /* ~0.99997, max representable Q1.15 */
 #define Q15_SHIFT (15)
 
+typedef uint16_t Q1_15;
+typedef uint32_t Q1_24;
 
-/**
- * \brief Q1.15 x Q1.15 -> Q1.15 multiply, signed, with rounding shift.
+ /*
+ * Q1.15 x Q1.15 -> Q1.15 multiply, signed, with rounding shift.
  *
  * 16x16 multiply widens to 32 bits (fits a single PicoRV32 MUL instruction),
  * then shift right 15 to bring back to Q1.15.

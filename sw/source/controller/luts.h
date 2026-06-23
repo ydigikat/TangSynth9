@@ -22,6 +22,7 @@ extern const Q1_15  env_decay_coeff_lut[128];
 extern const int16_t env_decay_overshoot_base_lut[ENV_DECAY_OVERSHOOT_CUTOFF]; 
 extern const int16_t env_release_overshoot_lut[ENV_RELEASE_OVERSHOOT_CUTOFF];  
 extern const uint32_t midi_fcw_lut[128];
+extern const Q1_15 midi_exp_curve_lut[128];
 
 /*
  * Bounds-checked lookup into a truncated ADSR TCO LUT.

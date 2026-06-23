@@ -94,3 +94,56 @@ Much of the code is ported from my MCU based template. This uses normalised floa
 Rather than create fixed point math functions (or approximations) I use Python to generate precomputed lookup tables. 
 
 The discrete values will change the characteristics of the synthesiser subtly however musically these are largely irrelevant, my floating point synths are all MIDI controlled so only calculate at 7-bit MIDI intervals so effectively discrete anyway.
+
+## Parameter Mappings
+
+Parameters are changed using MIDI CC messages, 7-bit range 0-127.  
+
+These map either directly to a parameter value or are mapped via  LUT depending on the usage of the control.
+
+```Non-generic``` LUTs are already precomputed for the MIDI values 0-127 so the parameter is just an index.  Attack, Filter Cutoff etc.  These are stored in the patch as an index.
+
+The ```generic``` LUT is a precomputed log taper that works well for controls where finer control at the lower values is wanted.  The raw MIDI CC value is used as the index into the table:
+```c
+exp_value = midi_exp_curve_lut[cc_value]
+``` 
+Values used as multipliers are stored in patches as Q1.15 fixed point decimal values. 
+
+Other values are stored unsigned except for the pitch offsets which are bipolar and need to be signed.
+
+| Parameter | Stored Type | LUT | Notes |
+| --------- | ---- | ----| ------|
+| AMP_LEVEL | Q1.15 | generic | multiplier |
+| AMP_MOD_SOURCE | uint8_t | - | enum value |
+| AMP_MOD_DEPTH | Q1.15 | generic | multiplier |
+| ENV_ATTACK | uint8_t | attack coeff| index | 
+| ENV_SUSTAIN | Q1.15 | - | multipler. |
+| ENV_DECAY |  uint8_t | decay + tco coeff | index | 
+| ENV_RELEASE |  uint8_t | release + tco coeff | index | 
+| ENV_NOTE_TRACL | bool | - | flag |
+| ENV_VEL_TRACK | bool | - | flag |
+| ENV_MODE | uint8_t | - | enum|
+| OSC_WAVE | uint8_t | - | enum |
+| OSC_LEVEL | Q1.15 | generic | muliplier |
+| OSC_OCTAVE | int8_t | none | signed offset -2:2|
+| OSC_SEMI | int8_t | none | signed offset -6:6|
+| OSC_CENTS | int8_t | none | signed offset -50:50|
+| OSC_PW | uint8_t | none | raw 7-bit - clamped to musical range|
+| OSC_MOD_SOURCE | uint8_t | - | enum value |
+| OSC_MOD_DEPTH | Q1.15 | generic | multiplier |
+| LFO_RATE | Q1.15 | generic | multipler|
+| LFO_MODE | int8_t | none | enum |
+| GL_AMOUNT | Q1.15 | generic | glide amount, small amounts most useful  |
+| GL_TIME | Q1.15 | generic | glide time, small amounts most useful | 
+| FILT_CUTOFF | uint8_t | prewarped g-coeff | index | 
+| FILT_RES | Q1.15 | generic | sensitive at high values |
+| FILT_MODE | uint8_t | - | enum |
+| FILT_MOD_SOURCE | uint8_t | - | enum value |
+| FILT_MOD_DEPTH | Q1.15 | generic | multiplier |
+| FILT_KEY_TRACK | bool | - | flag |
+| SYNTH_VOICE_MODE | uint8_t | - | enum |
+| SYNTH_PORTAMENTO_ON | bool | - | flag |
+| SYNTH_PORTAMENTO_TIME | Q1.15 | generic | short times more useful |
+| SYNTH_UNISON_DETUNE | Q1.15 | generic | multiplier|
+
+

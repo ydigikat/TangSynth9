@@ -4,6 +4,11 @@
 
 #include "env.h"
 #include "params.h"
+#include "drv.h"
+
+#ifdef TRACE_ENABLED
+static const char *TRACE_FILE = "env.c";
+#endif
 
 
 
