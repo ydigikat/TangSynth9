@@ -3,7 +3,7 @@
  */
 
 #include "drv.h"
-#include "controller.h"
+#include "synth.h"
 
 #define IRQ_TIMER (1u)
 #define IRQ_AUDIO (1u << 3)
@@ -12,7 +12,7 @@
 #define TIMER_COUNT (6000000UL)
 
 static volatile uint8_t irq_count = 0;
-static struct controller controller;
+static struct synth synth;
 static volatile bool blink = false;
 
 static inline uint32_t reload_timer(uint32_t val);
@@ -27,11 +27,11 @@ int main(void)
 #endif
     
   reload_timer(TIMER_COUNT);
-  controller_init(&controller);  
+  synth_init(&synth);  
 
   while (1)
   {
-    irq_count = controller_execute(&controller, irq_count);
+    irq_count = synth_execute(&synth, irq_count);
   }
 
   /*NOTREACHED*/

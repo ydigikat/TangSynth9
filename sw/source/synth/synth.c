@@ -3,12 +3,12 @@
  *  (c) Jason Wilden, 2026
  */
 
-#include "controller.h"
+#include "synth.h"
 #include "params.h"
 #include "drv.h"
 
 #ifdef TRACE_ENABLED
-static const char *TRACE_FILE = "controller.c";
+static const char *TRACE_FILE = "synth.c";
 #endif
 
 /* Number of samples in each control-rate cycle */
@@ -17,35 +17,35 @@ static const char *TRACE_FILE = "controller.c";
 static struct midi_instance midi_in;
 
 /* Private functions */
-static void note_on(struct controller *controller, uint8_t note, uint8_t velocity);
-static void note_off(struct controller *controller, uint8_t note);
-static void update_voice_params(struct controller *controller);
-static struct voice *find_oldest_active_voice(struct controller *controller);
-static struct voice *find_voice_by_note(struct controller *controller, uint8_t note);
-static inline struct voice *find_free_voice(struct controller *controller);
-static inline void age_voices(struct controller *controller);
+static void note_on(struct synth *synth, uint8_t note, uint8_t velocity);
+static void note_off(struct synth *synth, uint8_t note);
+static void update_voice_params(struct synth *synth);
+static struct voice *find_oldest_active_voice(struct synth *synth);
+static struct voice *find_voice_by_note(struct synth *synth, uint8_t note);
+static inline struct voice *find_free_voice(struct synth *synth);
+static inline void age_voices(struct synth *synth);
 
-void controller_init(struct controller *controller)
+void synth_init(struct synth *synth)
 {
-  controller->midi_channel = MIDI_OMNI;
+  synth->midi_channel = MIDI_OMNI;
 
   param_init();
-  param_create_default_patch(controller->params);
+  param_create_default_patch(synth->params);
 
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    controller->voice[i].idx = i;
-    voice_init(&controller->voice[i], controller->params);
-    voice_update(&controller->voice[i]);
+    synth->voice[i].idx = i;
+    voice_init(&synth->voice[i], synth->params);
+    voice_update(&synth->voice[i]);
   }
 }
 
 /*
  * Dispatch MIDI messages
  */
-void controller_handle_midi(struct controller *controller, struct midi_msg *msg)
+void synth_handle_midi(struct synth *synth, struct midi_msg *msg)
 {
-  TRACE_ASSERT(controller);
+  TRACE_ASSERT(synth);
   TRACE_ASSERT(msg);
 
   switch (msg->data[0])
@@ -54,27 +54,27 @@ void controller_handle_midi(struct controller *controller, struct midi_msg *msg)
     if (msg->data[2] > 0)
     {
       // TRACE_PRINT_DEC("NoteOn:",msg->data[1]);
-      note_on(controller, msg->data[1], msg->data[2]);
+      note_on(synth, msg->data[1], msg->data[2]);
     }
     else
     {
       /* Controllers can send a NOTE_ON with velocity 0 instead of NOTE_OFF */
       // TRACE_PRINT_DEC("NoteOff:",msg->data[1]);
-      note_off(controller, msg->data[1]);
+      note_off(synth, msg->data[1]);
     }
 
     break;
 
   case MIDI_STATUS_NOTE_OFF:
     // TRACE_PRINT_DEC("NoteOff:",msg->data[1]);
-    note_off(controller, msg->data[1]);
+    note_off(synth, msg->data[1]);
     break;
 
   case MIDI_STATUS_CONTROL_CHANGE:
   {
     // TRACE_PRINTF("Controller: %d, %d\n", msg->data[1], msg->data[2], 0);
 
-    update_voice_params(controller);
+    update_voice_params(synth);
   }
   break;
   }
@@ -83,21 +83,21 @@ void controller_handle_midi(struct controller *controller, struct midi_msg *msg)
 /*
  * Calls the voices to update their internal calculations for modulators.
  */
-void controller_calculate(struct controller *controller)
+void synth_render(struct synth *synth)
 {
 #pragma GCC unroll 8
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    voice_calculate(&controller->voice[i]);
+    voice_calculate(&synth->voice[i]);
   }
 }
 
 /*
  * Executes the control-rate calculation cycle by counting the interrupts.
  */
-uint8_t controller_execute(struct controller *controller, uint8_t irq_count)
+uint8_t synth_execute(struct synth *synth, uint8_t irq_count)
 {
-  TRACE_ASSERT(controller);
+  TRACE_ASSERT(synth);
 
   if (irq_count == 1U)
   {
@@ -121,11 +121,11 @@ uint8_t controller_execute(struct controller *controller, uint8_t irq_count)
         // TRACE_PRINT_HEX("D0:",msg->data[0],2);
         // TRACE_PRINT_HEX("D1:",msg->data[1],2);
         // TRACE_PRINT_HEX("D2:",msg->data[2],2);
-        controller_handle_midi(controller, msg);
+        synth_handle_midi(synth, msg);
       }
     }
 
-    controller_calculate(controller);
+    synth_render(synth);
 
     // TODO: Copy to VRAM here
   }
@@ -156,29 +156,29 @@ uint8_t controller_execute(struct controller *controller, uint8_t irq_count)
  * age by one generation. This relative lifetime counter identifies the longest-
  * sounding voice for stealing. Age resets to 0 when a voice ends.
  */
-static void note_on(struct controller *controller, uint8_t note, uint8_t velocity)
+static void note_on(struct synth *synth, uint8_t note, uint8_t velocity)
 {
   struct voice *voice = NULL;
 
-  voice = find_voice_by_note(controller, note);
+  voice = find_voice_by_note(synth, note);
   if (voice)
   {
     voice_note_on(voice, note, velocity);
     return;
   }
 
-  voice = find_free_voice(controller);
+  voice = find_free_voice(synth);
   if (voice)
   {
-    age_voices(controller);
+    age_voices(synth);
     voice_note_on(voice, note, velocity);
     return;
   }
 
-  voice = find_oldest_active_voice(controller);
+  voice = find_oldest_active_voice(synth);
   if (voice)
   {
-    age_voices(controller);
+    age_voices(synth);
     voice_note_on(voice, note, velocity);
     return;
   }
@@ -191,9 +191,9 @@ static void note_on(struct controller *controller, uint8_t note, uint8_t velocit
  *   Locate and release the voice playing this note. May not find one - if the
  *   voice was stolen while the key was held, it's already playing a different note.
  */
-static void note_off(struct controller *controller, uint8_t note)
+static void note_off(struct synth *synth, uint8_t note)
 {
-  struct voice *voice = find_voice_by_note(controller, note);
+  struct voice *voice = find_voice_by_note(synth, note);
   if (voice)
   {
     voice_note_off(voice);
@@ -206,27 +206,27 @@ static void note_off(struct controller *controller, uint8_t note)
  * Call each voice to update their internal state and those of the signal
  * chain directly. The voice manages voice parameter updates entirely.
  */
-void update_voice_params(struct controller *controller)
+void update_voice_params(struct synth *synth)
 {
 #pragma GCC unroll 8
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    voice_update(&controller->voice[i]);
+    voice_update(&synth->voice[i]);
   }
 }
 
 /*
  * Find an idle voice ready for immediate use
  */
-static inline struct voice *find_free_voice(struct controller *controller)
+static inline struct voice *find_free_voice(struct synth *synth)
 {
   struct voice *free_voice = NULL;
 
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    if (controller->voice[i].state == VOICE_IDLE)
+    if (synth->voice[i].state == VOICE_IDLE)
     {
-      return &controller->voice[i];
+      return &synth->voice[i];
     }
   }
   return free_voice;
@@ -236,17 +236,17 @@ static inline struct voice *find_free_voice(struct controller *controller)
  * Find the longest-running active voice for stealing.
  * Only considers ACTIVE voices - voices mid-release are excluded.
  */
-static inline struct voice *find_oldest_active_voice(struct controller *controller)
+static inline struct voice *find_oldest_active_voice(struct synth *synth)
 {
   int8_t age = -1;
   struct voice *oldest_voice = NULL;
 
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    if (controller->voice[i].state == VOICE_ACTIVE && controller->voice[i].age > age)
+    if (synth->voice[i].state == VOICE_ACTIVE && synth->voice[i].age > age)
     {
-      age = controller->voice[i].age;
-      oldest_voice = &controller->voice[i];
+      age = synth->voice[i].age;
+      oldest_voice = &synth->voice[i];
     }
   }
 
@@ -257,13 +257,13 @@ static inline struct voice *find_oldest_active_voice(struct controller *controll
  * Find which active voice is currently playing a specific note.
  * Returns NULL if not found - may occur if voice was stolen while key held.
  */
-static inline struct voice *find_voice_by_note(struct controller *controller, uint8_t note)
+static inline struct voice *find_voice_by_note(struct synth *synth, uint8_t note)
 {
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    if (controller->voice[i].state == VOICE_ACTIVE && controller->voice[i].note == note)
+    if (synth->voice[i].state == VOICE_ACTIVE && synth->voice[i].note == note)
     {
-      return &controller->voice[i];
+      return &synth->voice[i];
     }
   }
 
@@ -277,13 +277,13 @@ static inline struct voice *find_voice_by_note(struct controller *controller, ui
  * increment their age once per generation; voices reset to 0 when they end.
  * The highest age always identifies the longest-sounding voice.
  */
-static inline void age_voices(struct controller *controller)
+static inline void age_voices(struct synth *synth)
 {
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    if (controller->voice[i].state == VOICE_ACTIVE)
+    if (synth->voice[i].state == VOICE_ACTIVE)
     {
-      controller->voice[i].age++;
+      synth->voice[i].age++;
     }
   }
 }

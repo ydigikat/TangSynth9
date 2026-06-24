@@ -13,16 +13,16 @@ set(BSP_DIR ${SRC_DIR}/bsp)
 # Main application
 set(SRCS_APP
   ${SRC_DIR}/main.c 
-  ${SRC_DIR}/controller/controller.c 
-  ${SRC_DIR}/controller/midi.c
-  ${SRC_DIR}/controller/voice.c
-  ${SRC_DIR}/controller/env.c    
-  ${SRC_DIR}/controller/luts.c    
-  ${SRC_DIR}/controller/params.c   
-  ${SRC_DIR}/controller/lfo.c   
+  ${SRC_DIR}/synth/synth.c 
+  ${SRC_DIR}/synth/midi.c
+  ${SRC_DIR}/synth/voice.c
+  ${SRC_DIR}/synth/env.c    
+  ${SRC_DIR}/synth/luts.c    
+  ${SRC_DIR}/synth/params.c   
+  ${SRC_DIR}/synth/lfo.c   
 )
 
-set(INCL_APP ${SRC_DIR} ${SRC_DIR}/controller)
+set(INCL_APP ${SRC_DIR} ${SRC_DIR}/synth)
 set(DEFS_APP 
       $<$<CONFIG:DEBUG>: DEBUG>       
       #TRACE_ENABLED
