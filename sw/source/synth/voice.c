@@ -62,7 +62,7 @@ void voice_reset(struct voice *voice)
   voice->age = 0;
 }
 
-void voice_calculate(struct voice *voice)
+void voice_render(struct voice *voice)
 {
   // TRACE_ASSERT(voice);
   voice_state_handlers[voice->state](voice);

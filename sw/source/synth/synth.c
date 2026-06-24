@@ -88,7 +88,7 @@ void synth_render(struct synth *synth)
 #pragma GCC unroll 8
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    voice_calculate(&synth->voice[i]);
+    voice_render(&synth->voice[i]);
   }
 }
 

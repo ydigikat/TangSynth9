@@ -46,7 +46,7 @@ struct voice
 /* API */
 void voice_init(struct voice *voice, const param_value_t *restrict params);
 void voice_reset(struct voice *voice);
-void voice_calculate(struct voice *voice);
+void voice_render(struct voice *voice);
 void voice_update(struct voice *voice);
 void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity);
 void voice_note_off(struct voice *voice);
