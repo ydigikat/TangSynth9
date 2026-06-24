@@ -1,149 +1,48 @@
 # TangSynth9
 
-TangSynth9 is a template SOC design providing a starting point for digital synthesiser projects.  
+TangSynth9 is a template design for FPGA based digital synthesisers.  It also serves as an exploration of techniques, learning tool and test-bench for me.
 
-The SOC implementation comprises:
+This is a hobby project.  It will likely go for extended periods without updates when my professional work takes up my time.  While I am a commercial embedded engineer (with some 44 years experience), I do not apply the same rigour to my hobby projects as I would to a peer-reviewed commercial project, so expect to see things that make you wince.
 
-**SOC**
+### Documentation
 
-- SOC 
-  - Yosys picorv32 soft-core CPU @ 24MHz
-  - 16K RAM, 
-  - IRQ support enabled
-  - Hardware MUL/DIV/BARREL
-  - MMIO modules.
-- Audio pipeline
-  - Audio control (voice fanout)
-  - Voice sample signal chain (DSP)
-  - Audio mixing (voice summing)
-  - I2S output
+[SOC Overview](<docs/00 SOC Overview.md>)  
+[The MCU implementation](<docs/01 The MCU.md>)  
+[The Audio Pipeline (RTL) implementation](<docs/02 The Audio Pipeline>)
 
-The Tang Nano 9K hosts the GW1NR-9 which is an FPGA + PSRAM (SIP)
-- 9K LUTs (approx)
-- 468K BRAM
-- 20 18x18 multipliers (DSP)
-- 2 PLLs
-- 608K User Flash
-- 8MB PSRAM (on-die)
-  
-## SOC Architecture Overview
+### Current Status
 
-#### Hardware Architecture
+24/06/2026 - Started building out the basic SOC framework.
 
-![SOC Architecture](docs/assets/images/soc_architecture.svg)
+### Folder Structure
 
-The SOC divides the functionality into a control-plane, managed by the CPU, and a data plane which is a pure RTL pipeline.
+> I work on Linux and my project layout and tooling is for that operating system. 
 
-The MCU handles the more complicated and slower rate logic, concerned with voice allocation, control rate signals (modulation), parameters and MIDI parsing.
-
-The RTL data-plane handles the voice DSP and is independent from the MCU.
-
-Communication uses the audio-interrupt from the I2S peripheral which signals to the MCU that data updates can be safely made to the voice configuration registers (timed between samples to avoid glitches).
-
-Data updates are made using shared memory (VRAM).  The MCU audio interrupt ISR signals to the pipeline via the audio pipeline control register (APCR) to indicate when the shared data can be read.
-
-This completely decouples the audio pipeline and MCU.
-
-The SOC provides a set of design specific MMIO modules:
-
-| Module | Purpose |
+| Folder | Content |
 | ------ | ------- |
-| SRAM   | CPU SRAM (BRAM) |
-| VRAM   | Share Voice RAM |
-| APCR   | Audio pipeline control register |
-| TRACE  | Serial-tx module (used only for debug/trace) |
-| MIDI   | Serial-rx module (used only for MIDI in) |
-| GPO    | General purpose output (debug and on-board LED indicators)|
+| ```docs```   | Documentation files and assets.|
+| ```hw/constraints```| CST/SDC constraint files |
+| ```hw/rtl/audio``` | The audio pipeline RTL |
+| ```hw/rtl/mcu``` | The MCU RTL |
+| ```hw/rtl/``` | Common RTL and top module|
+| ```test/*```  | Testbenches |
+| ```tools```   | TCL build script and reports parser|
+| ```sw/cmake```| C toolchain configurations|
+| ```sw/source```| CMakeLists and main.c|
+| ```sw/source/bsp```| Board support package |
+| ```sw/source/synth```| The synthesiser control plane functions|
+| ```sw/test``` | Unit tests|
+| ```sw/tools```| Python scripts for LUT generation & 'ROM' loading|
 
-#### Software Architecture
+The software build outputs go into the ```handoff``` folder.  These are split into 4 binary files for loading into the MCU during HDL synthesis.  There are also transient ```build``` folders created for HW and SW build artefacts.
 
-![alt text](docs/assets/images/sw_architecture.svg)
+### Tooling
 
-| # | Notes | 
-|---|-------|
-| 1 | The bare-metal super loop handles all control rate calculations.|
-| 2 | Param changes, MIDI events, and modulation signals are all latched into a set of internal structured|
-| 3 | Incoming serial MIDI data interrupts the processor and the ISR stores it into a ring-buffer for processing by the super-loop.|
-| 4 | The audio ISR indicates the point at which latched events can be written to voice ram (VRAM). |
-| 5 | Once VRAM is updated, PCR status indicates it can be read by audio pipeline|
-| 6 | THe VRAM holds current parameters for each voice|
-| 7 | A mixer sums the voice outputs before transmitting via the I2S peripheral, the I2S peripheral signals when it is ready for the sample| 
-| 8 | The I2S peripheral drives timing (sample request/audio IRQ) as well as output of samples|
+The project is set up for work with Microsoft VSCode and includes build tasks to build and program the device.  A number of extensions are used and you will be recommended to install these by VSCode when you open the folder the first time.
 
-## Timing
+I use the Gowin EDA tools for hardware implementation.  This is not open source but are free for use with non-commercial projects.  Note that the Gowin programmer does not work on Linux so OpenFPGALoader is used instead.  
 
-A single 24MHz clock times both the MCU and the audio pipeline.  This is a conservative value chosen to avoid timing challenges in the picorv32 which has some combinatorial chains with long propagation delays.  While modest, it is sufficient for audio processing and the control functions required.
+The firmware is compiled using the standard GCC RISCV toolchain and assembler.
 
-The 24MHz clock is divided down to a 3MHz bit clock for the I2S peripheral.  This clock rate, the best the PLL can achieve, is not precisely that needed for a 48kHz Fs resulting instead in a 46.875kHz rate.
-
-*Fs = BCLK / 64 = 3MHz / 64 = 46875 Hz*
-
-This error is within tolerance for most DACs and should be corrected for by the source unit generator (FCW).
-
-## Fixed Point Arithmetic Porting
-
-| Signal | Range | Format | Notes |
-| ------ | ----- | ------ | ----- |
-| Phase Acc | 0-2^24 | uint32_t | Counter - no fraction |
-| FCW  | 0-2^24 | uint32_t | Derivative of Phase Acc width |
-| Control Rate Signals   | -1.0 : ~1.0 | SQ1.15 | Bipolar normalised |
-| User Parameters | 0-2^7 | uint8_t | MIDI CC (7-bit) values |
-
-Much of the code is ported from my MCU based template. This uses normalised floating point for all calculations as well as several math functions and employs a floating point unit.  The picorv32 is not suited to math, it has no floating point or math support at all.  
-
-Rather than create fixed point math functions (or approximations) I use Python to generate precomputed lookup tables. 
-
-The discrete values will change the characteristics of the synthesiser subtly however musically these are largely irrelevant, my floating point synths are all MIDI controlled so only calculate at 7-bit MIDI intervals so effectively discrete anyway.
-
-## Parameter Mappings
-
-Parameters are changed using MIDI CC messages, 7-bit range 0-127.  
-
-These map either directly to a parameter value or are mapped via  LUT depending on the usage of the control.
-
-```Non-generic``` LUTs are already precomputed for the MIDI values 0-127 so the parameter is just an index.  Attack, Filter Cutoff etc.  These are stored in the patch as an index.
-
-The ```generic``` LUT is a precomputed log taper that works well for controls where finer control at the lower values is wanted.  The raw MIDI CC value is used as the index into the table:
-```c
-exp_value = midi_exp_curve_lut[cc_value]
-``` 
-Values used as multipliers are stored in patches as Q1.15 fixed point decimal values. 
-
-Other values are stored unsigned except for the pitch offsets which are bipolar and need to be signed.
-
-| Parameter | Stored Type | LUT | Notes |
-| --------- | ---- | ----| ------|
-| AMP_LEVEL | Q1.15 | generic | multiplier |
-| AMP_MOD_SOURCE | uint8_t | - | enum value |
-| AMP_MOD_DEPTH | Q1.15 | generic | multiplier |
-| ENV_ATTACK | uint8_t | attack coeff| index | 
-| ENV_SUSTAIN | Q1.15 | - | multipler. |
-| ENV_DECAY |  uint8_t | decay + tco coeff | index | 
-| ENV_RELEASE |  uint8_t | release + tco coeff | index | 
-| ENV_NOTE_TRACL | bool | - | flag |
-| ENV_VEL_TRACK | bool | - | flag |
-| ENV_MODE | uint8_t | - | enum|
-| OSC_WAVE | uint8_t | - | enum |
-| OSC_LEVEL | Q1.15 | generic | muliplier |
-| OSC_OCTAVE | int8_t | none | signed offset -2:2|
-| OSC_SEMI | int8_t | none | signed offset -6:6|
-| OSC_CENTS | int8_t | none | signed offset -50:50|
-| OSC_PW | uint8_t | none | raw 7-bit - clamped to musical range|
-| OSC_MOD_SOURCE | uint8_t | - | enum value |
-| OSC_MOD_DEPTH | Q1.15 | generic | multiplier |
-| LFO_RATE | Q1.15 | generic | multipler|
-| LFO_MODE | int8_t | none | enum |
-| GL_AMOUNT | Q1.15 | generic | glide amount, small amounts most useful  |
-| GL_TIME | Q1.15 | generic | glide time, small amounts most useful | 
-| FILT_CUTOFF | uint8_t | prewarped g-coeff | index | 
-| FILT_RES | Q1.15 | generic | sensitive at high values |
-| FILT_MODE | uint8_t | - | enum |
-| FILT_MOD_SOURCE | uint8_t | - | enum value |
-| FILT_MOD_DEPTH | Q1.15 | generic | multiplier |
-| FILT_KEY_TRACK | bool | - | flag |
-| SYNTH_VOICE_MODE | uint8_t | - | enum |
-| SYNTH_PORTAMENTO_ON | bool | - | flag |
-| SYNTH_PORTAMENTO_TIME | Q1.15 | generic | short times more useful |
-| SYNTH_UNISON_DETUNE | Q1.15 | generic | multiplier|
-
+For Unit testing the native GCC compiler for Linux is used.
 

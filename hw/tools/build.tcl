@@ -163,18 +163,18 @@ puts "=================================================================="
 set RTL_FILES [list \
     "$RTL_DIR/$TOP_MODULE.sv" \
     "$RTL_DIR/clock_gen.sv" \
-    "$RTL_DIR/soc/picorv32.v" \
-    "$RTL_DIR/soc/soc.sv" \
-    "$RTL_DIR/soc/sram.sv" \
-    "$RTL_DIR/soc/gpo.sv" \
-    "$RTL_DIR/soc/vrcr.sv" \
-    "$RTL_DIR/soc/serial_tx.sv" \
-    "$RTL_DIR/soc/sram_block.sv" \
-    "$RTL_DIR/soc/buffer.sv" \
-    "$RTL_DIR/soc/trace.sv" \
-    "$RTL_DIR/soc/vram.sv" \
-    "$RTL_DIR/soc/serial_rx.sv" \
-    "$RTL_DIR/soc/midi.sv" \
+    "$RTL_DIR/mcu/picorv32.v" \
+    "$RTL_DIR/mcu/mcu.sv" \
+    "$RTL_DIR/mcu/sram.sv" \
+    "$RTL_DIR/mcu/gpo.sv" \
+    "$RTL_DIR/mcu/vrcr.sv" \
+    "$RTL_DIR/mcu/serial_tx.sv" \
+    "$RTL_DIR/mcu/sram_block.sv" \
+    "$RTL_DIR/mcu/buffer.sv" \
+    "$RTL_DIR/mcu/trace.sv" \
+    "$RTL_DIR/mcu/vram.sv" \
+    "$RTL_DIR/mcu/serial_rx.sv" \
+    "$RTL_DIR/mcu/midi.sv" \
     "$RTL_DIR/audio/i2s_tx.sv" \
     "$RTL_DIR/audio/test_tone.sv" \
     "$RTL_DIR/audio/aud_pipeline.sv" 

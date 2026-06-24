@@ -37,20 +37,20 @@ module top (
   );
 
   //------------------------------------------------------------------------------
-  // MCU (SOC)
+  // MCU 
   //------------------------------------------------------------------------------
   logic trap, trace, audio_irq, vram_valid, pipe_update;
   logic[15:0] gpo, debug;
   logic[7:0] vram_addr;
   logic[31:0] vram_data;
   
-  soc #(             
+  mcu #(             
      .B0_MEM_FILE(`B0_MEM_FILE),
      .B1_MEM_FILE(`B1_MEM_FILE),
      .B2_MEM_FILE(`B2_MEM_FILE),
      .B3_MEM_FILE(`B3_MEM_FILE)
   )
-  u_soc (
+  u_mcu (
     .clk_i(clk),
     .rst_ni(rst_n),
     .aud_irq_i(audio_irq),    
