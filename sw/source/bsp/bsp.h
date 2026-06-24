@@ -51,7 +51,7 @@ typedef struct
 typedef struct 
 {
     __IO uint32_t CR; /* Control register */
-} APCR_t;
+} VRCR_t;
 
 typedef struct
 {
@@ -65,7 +65,7 @@ typedef struct
  * --------------------------------------------------------------------------*/
 #define GPO1_BASE (PERIPH_BASE + 0x00UL)
 #define TRACE_BASE (PERIPH_BASE + 0x40UL)
-#define APCR_BASE (PERIPH_BASE + 0x80UL)
+#define VRCR_BASE (PERIPH_BASE + 0x80UL)
 #define MIDI_BASE  (PERIPH_BASE + 0xC0UL)
 
 /* ----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ typedef struct
  * --------------------------------------------------------------------------*/
 #define GPO1 ((GPO_t *)GPO1_BASE)
 #define TRACE ((TRACE_t *)TRACE_BASE)
-#define APCR ((APCR_t *)APCR_BASE)
+#define VRCR ((VRCR_t *)VRCR_BASE)
 #define MIDI  ((MIDI_t *)MIDI_BASE)
 
 
@@ -160,11 +160,11 @@ typedef struct
 static const uint8_t TRACE_DIV = (SYS_FREQ/(115200*16)-1); /*!< 115200 divisor */
 
 /* ----------------------------------------------------------------------------
- * Audio Pipeline Control Register (APCR)
+ * Voice Ram Control Register
  * --------------------------------------------------------------------------*/
-#define APCR_CR_VRAM_UPDATE_Pos (0U)
-#define APCR_CR_VRAM_UPDATE_Msk (0x1UL << APCR_CR_VRAM_UPDATE_Pos)
-#define APCR_CR_VRAM_UPDATE (APCR_CR_VRAM_UPDATE_Msk)   // [0] Update from VRAM
+#define VRCR_CR_VRAM_UPDATE_Pos (0U)
+#define VRCR_CR_VRAM_UPDATE_Msk (0x1UL << VRCR_CR_VRAM_UPDATE_Pos)
+#define VRCR_CR_VRAM_UPDATE (VRCR_CR_VRAM_UPDATE_Msk)   // [0] Update from VRAM
 
 
 /* ----------------------------------------------------------------------------

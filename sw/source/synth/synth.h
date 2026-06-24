@@ -14,6 +14,16 @@
 
 #define MAX_VOICES (8)
 
+/*
+* The synth is divided between the SOC and the audio pipeline. The SOC is responsible
+* for control plane functions,MIDI, patch management, modulation and voice lifecycles.  
+* It does not generate audio instead rendering the data required by the audio pipeline 
+* to do this.  This is passed to the pipeline via the voice ram (VRAM).
+*
+* The synth renders data at a slower rate than samples are generated, it counts the
+* number of audio interrupts (sample rate) from the audio pipeline and updates VRAM 
+* every time the count reaches the block size.
+*/
 struct synth
 {
   uint8_t midi_channel;

@@ -104,13 +104,13 @@ uint8_t synth_execute(struct synth *synth, uint8_t irq_count)
     /*
      * On the first interrupt of a cycle we:
      *
-     * - set the APCR register to stop the audio pipeline updating from VRAM
+     * - set the VCR register to stop the audio pipeline updating from VRAM
      * - parse any buffered MIDI events
      * - process all the voice calculations (modulators & lifecycle)
      * - copy the new calculated values into VRAM.
      */
 
-    CLEAR_BIT(APCR->CR, APCR_CR_VRAM_UPDATE);
+    CLEAR_BIT(VRCR->CR, VRCR_CR_VRAM_UPDATE);
 
     uint8_t byte;
     while (midi_buffer_read(&byte))
@@ -134,10 +134,10 @@ uint8_t synth_execute(struct synth *synth, uint8_t irq_count)
     /*
      * On the last interrupt of the cycle we:
      *
-     * - set the APCR register so the pipeline updates before next sample
+     * - set the VCR register so the pipeline updates before next sample
      * - reset the sample counter.
      */
-    SET_BIT(APCR->CR, APCR_CR_VRAM_UPDATE);
+    SET_BIT(VRCR->CR, VRCR_CR_VRAM_UPDATE);
     irq_count = 1;
   }
 

@@ -167,7 +167,7 @@ set RTL_FILES [list \
     "$RTL_DIR/soc/soc.sv" \
     "$RTL_DIR/soc/sram.sv" \
     "$RTL_DIR/soc/gpo.sv" \
-    "$RTL_DIR/soc/apcr.sv" \
+    "$RTL_DIR/soc/vrcr.sv" \
     "$RTL_DIR/soc/serial_tx.sv" \
     "$RTL_DIR/soc/sram_block.sv" \
     "$RTL_DIR/soc/buffer.sv" \

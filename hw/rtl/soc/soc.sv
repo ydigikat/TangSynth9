@@ -48,7 +48,7 @@ localparam int SRAM_ADDR = 32'h0000_0000;
 localparam int VRAM_ADDR = 32'h0001_0000;
 localparam int GPO_ADDR = 32'h8000_0000;
 localparam int TRACE_ADDR =  32'h8000_0040;
-localparam int APCR_ADDR =  32'h8000_0080;
+localparam int VRCR_ADDR =  32'h8000_0080;
 localparam int MIDI_ADDR = 32'h8000_00C0;
 
 //------------------------------------------------------------------------------
@@ -129,25 +129,25 @@ picorv32 #(
 //------------------------------------------------------------------------------
 // Address decoder 
 //------------------------------------------------------------------------------
-logic sram_sel, tick_sel, gpo_sel, trace_sel, vram_sel, apcr_sel, midi_sel;
+logic sram_sel, tick_sel, gpo_sel, trace_sel, vram_sel, vrcr_sel, midi_sel;
 
 assign sram_sel = mem_valid && (mem_addr  < SRAM_SIZE);  
 assign vram_sel = mem_valid && (mem_addr >= VRAM_ADDR && mem_addr < GPO_ADDR);
 assign gpo_sel =  mem_valid && (mem_addr >= GPO_ADDR && mem_addr < GPO_ADDR + 'h40);
 assign trace_sel =  mem_valid && (mem_addr >= TRACE_ADDR && mem_addr < TRACE_ADDR + 'h40);
-assign apcr_sel = mem_valid && (mem_addr >= APCR_ADDR && mem_addr < APCR_ADDR + 'h40);
+assign vrcr_sel = mem_valid && (mem_addr >= VRCR_ADDR && mem_addr < VRCR_ADDR + 'h40);
 assign midi_sel = mem_valid && (mem_addr >= MIDI_ADDR && mem_addr < MIDI_ADDR + 'h40);
 
 
 //------------------------------------------------------------------------------
 // Data bus selector
 //------------------------------------------------------------------------------
-assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | apcr_rdy | midi_rdy); 
+assign mem_ready = mem_valid && (sram_rdy | gpo_rdy | trace_rdy | vram_rdy | vrcr_rdy | midi_rdy); 
 
 assign mem_rdata = sram_sel ? sram_rdata :                    
                    vram_sel ? vram_rdata : 
                    gpo_sel ? gpo_rdata : 
-                   apcr_sel ? apcr_rdata :                   
+                   vrcr_sel ? vrcr_rdata :                   
                    trace_sel ? trace_rdata : 
                    midi_sel ? midi_rdata : 
                    32'h0;
@@ -244,23 +244,23 @@ trace u_trace(
 
 
 //------------------------------------------------------------------------------
-// Audio pipeline control register module.  
+// Voice Ram Control Register
 // [0] = Pipeline should update from VRAM on next sample
 // [15:1] unassigned.
 //------------------------------------------------------------------------------
-logic apcr_rdy, pipe_vram_update;
-logic [31:0] apcr_rdata;
+logic vrcr_rdy, pipe_vram_update;
+logic [31:0] vrcr_rdata;
 
-apcr u_apcr(
+vrcr u_vrcr(
   .clk_i(clk_i),
   .rst_ni(rst_ni),
-  .select_i(apcr_sel),
+  .select_i(vrcr_sel),
   .vram_update_o(pipe_vram_update),
-  .mem_ready_o(apcr_rdy),
+  .mem_ready_o(vrcr_rdy),
   .mem_addr_i(mem_addr),
   .mem_wstrb_i(mem_wstrb),
   .mem_wdata_i(mem_wdata),
-  .mem_rdata_o(apcr_rdata)
+  .mem_rdata_o(vrcr_rdata)
 );
 
 //------------------------------------------------------------------------------
