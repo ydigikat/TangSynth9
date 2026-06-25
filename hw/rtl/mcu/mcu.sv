@@ -5,7 +5,7 @@
 `default_nettype none
 `include "defs.svh"
 
-module soc #(parameter string B0_MEM_FILE,    // ROM byte files
+module mcu #(parameter string B0_MEM_FILE,    // ROM byte files
                        string B1_MEM_FILE,
                        string B2_MEM_FILE,
                        string B3_MEM_FILE)
