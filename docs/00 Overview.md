@@ -62,4 +62,3 @@ The SOC chip implementation comprises:
   - Voice pipeline (6 parallel implementations)
   - Summing mixer
   - I2S TX controller (48kHz, 16-bit, Philips standard)
-
