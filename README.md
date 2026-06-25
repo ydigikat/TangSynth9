@@ -1,48 +1,72 @@
 # TangSynth9
 
-TangSynth9 is a template design for FPGA based digital synthesisers.  It also serves as an exploration of techniques, learning tool and test-bench for me.
+TangSynth9 is a template design for FPGA based digital synthesisers.  It also serves as an exploration of some audio techniques, a learning and work-bench exploration tool for me.
 
-This is a hobby project.  It will likely go for extended periods without updates when my professional work takes up my time.  While I am a commercial embedded engineer (with some 44 years experience), I do not apply the same rigour to my hobby projects as I would to a peer-reviewed commercial project, so expect to see things that make you wince.
+>This is a hobby project.  It will likely go for extended periods without updates when my professional work takes up my time.  I am a commercial embedded engineer (with some 44 years experience) but I do not apply the same rigour to my hobby projects as I would to a peer-reviewed commercial project, so expect to see things that make you wince.
 
 ### Documentation
 
-[SOC Overview](<docs/00 SOC Overview.md>)  
-[The MCU implementation](<docs/01 The MCU.md>)  
-[The Audio Pipeline (RTL) implementation](<docs/02 The Audio Pipeline>)
+- [SOC Overview](<docs/00 SOC Overview.md>)  
+- [The MCU implementation](<docs/01 The MCU.md>)  
+- [The Audio Pipeline (RTL) implementation](<docs/02 The Audio Pipeline>)
 
 ### Current Status
 
-24/06/2026 - Started building out the basic SOC framework.
-
-### Folder Structure
-
-> I work on Linux and my project layout and tooling is for that operating system. 
-
-| Folder | Content |
-| ------ | ------- |
-| ```docs```   | Documentation files and assets.|
-| ```hw/constraints```| CST/SDC constraint files |
-| ```hw/rtl/audio``` | The audio pipeline RTL |
-| ```hw/rtl/mcu``` | The MCU RTL |
-| ```hw/rtl/``` | Common RTL and top module|
-| ```test/*```  | Testbenches |
-| ```tools```   | TCL build script and reports parser|
-| ```sw/cmake```| C toolchain configurations|
-| ```sw/source```| CMakeLists and main.c|
-| ```sw/source/bsp```| Board support package |
-| ```sw/source/synth```| The synthesiser control plane functions|
-| ```sw/test``` | Unit tests|
-| ```sw/tools```| Python scripts for LUT generation & 'ROM' loading|
-
-The software build outputs go into the ```handoff``` folder.  These are split into 4 binary files for loading into the MCU during HDL synthesis.  There are also transient ```build``` folders created for HW and SW build artefacts.
+- 24/06/2026 - Started building out the basic SOC framework.
 
 ### Tooling
 
-The project is set up for work with Microsoft VSCode and includes build tasks to build and program the device.  A number of extensions are used and you will be recommended to install these by VSCode when you open the folder the first time.
+> This tooling configuration is for Linux (Ubuntu 22.04)
 
-I use the Gowin EDA tools for hardware implementation.  This is not open source but are free for use with non-commercial projects.  Note that the Gowin programmer does not work on Linux so OpenFPGALoader is used instead.  
+The project is set up for work with Microsoft VSCode and includes build tasks to build and program the device.  This is the simplest way to run the build tools.
 
-The firmware is compiled using the standard GCC RISCV toolchain and assembler.
+| Task | Purpose |
+| ---- | ------- |
+| Build & Program  |  Builds both firmware & hardware. Programs bitstream to FPGA RAM|
+| HW: Build | Builds hardware |
+| HW: Program | Builds hardware and programs bitstream to RAM|
+| HW: Flash | Builds hardware and flashes bitstream to FLASH|
+| HW: Test | Runs hardware testbench verification|
+| FW: Configure | Configures the CMake build for firmware |
+| FW: Build | Builds the firmware |
+| FW: Clean | Cleans the firmware build outputs |
+| FW: Test | Run the firmware unit tests (Unity) |
 
-For Unit testing the native GCC compiler for Linux is used.
+#### Hardware Toolchain
 
+The hardware toolchain is used to build and program/flash the FPGA bitstream.
+
+| Tool  | Purpose |Notes |
+| ----  | ----- | ---- |
+| gw_sh | Build|Gowin EDA command line tool (TCL console) |
+| openFPGALoader | Programming | Open source programmer. The Gowin programmer does not work on Linux|
+| iverilog | Simulation |Hardware simulation/verification|
+| gtkwave | Simulation| Hardware tracing/analysis|
+| Verilator| Linting | Static HDL source analysis|
+
+*The Gowin EDA tools are not open source but have a free license for non-commercial use.  Gowin generates a more optimal implementation than Yosys/Apicula open source tooling (for the present)*
+
+The build is scripted using ```/hw/tools/build.tcl.``` and invoked using the command ```gw_sh /hw/tools/build.tcl -flags```
+
+| Flag | Meaning |
+| -----| ------- |
+| -program | Programs the bitstream into the FPGA RAM|
+| -flash | Programs the bitstream into the FPGA FLASH|
+| -lint  | Lints all source using ```Verilator```|
+| -test  | Runs testbench verifications |
+
+#### Firmware Toolchain
+The firmware tools are used to build the firmware binary and unit tests. Firmware should always be built before the hardware as it is handed off to the hardware build for inclusion in the bitstream.
+
+| Tool  | Purpose |Notes |
+| ----  | ----- | ---- |
+| riscv32-unknown-elf-gcc | Cross-Compiler | Builds the RISCV32I firmware binary |
+| gcc | Native Compiler| Builds the Unity unit-tests|
+| cmake | Build | Build configuration|
+| ninja | Build | Build orchestration|
+| bin_to_hex.py | Handoff |  Split & binary handoff to hardware|
+| gen_luts.py | Code Gen | Generates various lookup tables for firmware|
+
+The firmware build is scripted using ```CMake``` & ```Ninja``` and invoked using the command ```cmake```  
+
+Unit tests are built with the Unity framework and invokved using the command ```cmake```
