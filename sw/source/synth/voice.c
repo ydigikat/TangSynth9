@@ -155,7 +155,7 @@ void voice_update(struct voice *voice)
 }
 
 /*
- * Handles the VOICE_IDLE state (nothing to do, gated by synth_render)
+ * Handles the VOICE_IDLE state (nothing to do, gated by synth_tick)
  */
 static void voice_state_idle(struct voice *voice)
 {  

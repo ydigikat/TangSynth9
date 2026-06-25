@@ -50,6 +50,5 @@ void voice_tick(struct voice *voice);
 void voice_update(struct voice *voice);
 void voice_note_on(struct voice *voice, uint8_t midi_note, uint8_t midi_velocity);
 void voice_note_off(struct voice *voice);
-void voice_legato(struct voice *voice, uint8_t midi_note);
 
 #endif /* __VOICE_H__ */

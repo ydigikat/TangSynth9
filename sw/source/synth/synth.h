@@ -35,7 +35,7 @@ struct synth
 /* API */
 void synth_init(struct synth *synth);
 void synth_handle_midi(struct synth *synth, struct midi_msg *msg);
-void synth_render(struct synth *synth);
-uint8_t synth_execute(struct synth *synth, uint8_t sample_count);
+void synth_tick(struct synth *synth);
+uint8_t synth_execute_cycle(struct synth *synth, uint8_t sample_count);
 
 #endif /* __CONTROLLER_H__*/
