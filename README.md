@@ -6,9 +6,10 @@ TangSynth9 is a template design for FPGA based digital synthesisers.  It also se
 
 ### Documentation
 
-- [SOC Overview](<docs/00 SOC Overview.md>)  
-- [The MCU implementation](<docs/01 The MCU.md>)  
-- [The Audio Pipeline (RTL) implementation](<docs/02 The Audio Pipeline>)
+- [Overview](<docs/00 Overview.md>)
+- [MCU Design](<docs/01 MCU Design.md>)
+- [Audio Pipeline Design](<docs/02 Audio Pipeline Design.md>)
+- [Synthesiser Architecture](<docs/03 Synthesiser Architecture.md>)
 
 ### Current Status
 
