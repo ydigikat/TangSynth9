@@ -12,7 +12,7 @@
 #include "voice.h"
 #include "params.h"
 
-#define MAX_VOICES (8)
+#define MAX_VOICES (4)
 
 /*
 * The synth is divided between the SOC and the audio pipeline. The SOC is responsible

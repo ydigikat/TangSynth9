@@ -13,7 +13,7 @@ The MCU uses a bare-metal, super-loop approach with interrupts.
 |---|-------|
 | 1 | The bare-metal super loop handles control rate signals, patch management, MIDI message parsing and voice lifecycle|
 | 2 | Incoming serial MIDI is stored in a ring-buffer for processing by the super-loop.|
-| 3 | The audio ISR indicates the point at which latched events can be written to voice ram (VRAM). |
+| 3 | The ISR triggers the control-rate render and VRAM commit; coherence is ensured by the block-boundary mechanism in hardware. |
 | 4 | MIDI bytes are received by the MIDI module which interrupts the CPU to store the byte|
 | 5 | Parameters and control rate signals are latched into VRAM with access controlled via the VRCR peripheral|
 | 6 | The I2S peripheral drives timing through sample request and audio IRQ. It generates stereo audio output|

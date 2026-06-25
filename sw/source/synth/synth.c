@@ -88,7 +88,10 @@ void synth_render(struct synth *synth)
 #pragma GCC unroll 8
   for (int i = 0; i < MAX_VOICES; i++)
   {
-    voice_render(&synth->voice[i]);
+    if(synth->voice->state != VOICE_IDLE)
+    {
+       voice_tick(&synth->voice[i]);
+    }
   }
 }
 
