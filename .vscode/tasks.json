@@ -5,7 +5,7 @@
       "label": "Build & Program",
       "dependsOrder": "sequence",
       "dependsOn": [
-        "FW: Build",
+        "FW: Build",        
         "HW: Program"
       ],
       "group": {
@@ -15,7 +15,7 @@
       "problemMatcher": []
     },
     {
-      "label": "HW: Build",
+      "label": "HW: Build",    
       "type": "shell",
       "command": "/opt/gowin/IDE/bin/gw_sh ${workspaceFolder}/hw/tools/build.tcl",
       "group": "build",
@@ -26,6 +26,9 @@
     },
     {
       "label": "HW: Program",
+       "dependsOn": [
+        "HW: Test"
+      ],
       "type": "shell",
       "command": "/opt/gowin/IDE/bin/gw_sh ${workspaceFolder}/hw/tools/build.tcl -program",
       "options": {

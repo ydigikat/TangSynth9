@@ -14,10 +14,10 @@ module i2s_tx_tb ();
   time    req_pulse_time = 0;
 
   //------------------------------------------------------------------------------
-  // Clock and reset — 48MHz, period 20.833ns
+  // Clock and reset — 24MHz, period 41.667ns
   //------------------------------------------------------------------------------
   logic clk = 0;
-  always #10.417 clk = ~clk;
+  always #20.833 clk = ~clk;
 
   logic rst_n;
   initial begin
@@ -43,16 +43,15 @@ module i2s_tx_tb ();
   );
 
   //------------------------------------------------------------------------------
-  // Monitor — req is now a registered clk_i signal, sample on posedge
+  // Monitor req timing for verify_sample_req
   //------------------------------------------------------------------------------
   always @(posedge clk) begin
     if (req) req_pulse_time = $time;
   end
 
   //------------------------------------------------------------------------------
-  // Tests — unchanged: all operate on aud_bclk/aud_lrclk edges
+  // verify_lrclk — unchanged
   //------------------------------------------------------------------------------
-
   task automatic verify_lrclk;
     integer bclk_edge_count = 0;
 
@@ -78,6 +77,9 @@ module i2s_tx_tb ();
     test_count++;
   endtask
 
+  //------------------------------------------------------------------------------
+  // verify_sample_req — unchanged
+  //------------------------------------------------------------------------------
   task automatic verify_sample_req;
     integer bclk_edge_count = 0;
     time    end_time;
@@ -97,8 +99,8 @@ module i2s_tx_tb ();
 
     end_time = $time;
 
-    // Wait > one BCLK half-period (48MHz/32 -> ~333ns half-period) for req to register
-    #400;
+    // Wait > one BCLK half-period (24MHz/16 -> ~667ns half-period) for req to register
+    #800;
 
     if (req_pulse_time == 0 || req_pulse_time < end_time) begin
       $display("FAIL: verify_sample_req, pulse not at expected time");
@@ -107,24 +109,45 @@ module i2s_tx_tb ();
     test_count++;
   endtask
 
-  task automatic verify_frame(logic [31:0] expected_result);
+  //------------------------------------------------------------------------------
+  // verify_frame
+  //
+  // The DUT latches sample_i on the SAME clk edge that req_o pulses.
+  // Therefore sample_i must already be valid BEFORE req arrives.
+  //
+  // Protocol:
+  //   - frame_to_verify : pattern currently being shifted out (sample_i was
+  //                        already captured by the DUT on the previous req)
+  //   - next_sample     : value to place on sample_i for the NEXT req to capture
+  //
+  // We set next_sample immediately after req is seen (req will deassert next
+  // cycle; sample_i is stable long before the next req, which is a full frame
+  // = 32 BCLKs = 512 clk cycles away).
+  //------------------------------------------------------------------------------
+  task automatic verify_frame(logic [31:0] frame_to_verify, logic [31:0] next_sample);
     logic   failed = 0;
     integer i      = 31;
 
+    // Wait for req pulse (sample_i already captured by DUT on this edge).
     wait (req);
-    sample = expected_result;
 
+    // Step past req so we're not racing the same edge, then drive next frame.
+    @(posedge clk);
+    #1;
+    sample = next_sample;
+
+    // Now verify the 32 bits shifting out for this frame.
     repeat (32) begin
       @(negedge aud_bclk);
       #1;
-
-      if (aud_sda != expected_result[i]) begin
+      if (aud_sda !== frame_to_verify[i]) begin
         failed = 1'b1;
         $display("FAIL: Bit: %0d | expecting %0x, got %0x", i,
-                 expected_result[i], aud_sda);
+                 frame_to_verify[i], aud_sda);
       end
       i--;
     end
+
     if (failed) test_failures++;
     test_count++;
   endtask
@@ -137,7 +160,9 @@ module i2s_tx_tb ();
     $dumpvars(0, i2s_tx_tb);
     $display("TESTBENCH: i2s_tx_tb");
 
-    sample = 0;
+    // Prime sample_i BEFORE the first req so the DUT captures it correctly.
+    // The DUT latches sample_i on the same cycle req fires; we must be ahead.
+    sample = 32'h0000_0001;
 
     wait (rst_n);
     repeat (2) @(negedge aud_lrclk);
@@ -145,18 +170,17 @@ module i2s_tx_tb ();
     verify_lrclk();
     verify_sample_req();
 
-    // verify_frame checks the frame that shifts out AFTER req captures sample_i.
-    // So we prime sample with the first expected value, then each call loads the
-    // *next* value while verifying the *current* one.
-    sample = 32'b0000000000000001_0000000000000001;  // prime for first frame
-    verify_frame(32'b0000000000000001_0000000000000001);
-    verify_frame(32'b1000000000000000_1000000000000000);
-    verify_frame(32'b0);
-    verify_frame(32'hFFFF_FFFF);
-    verify_frame(32'hCAFE_FEED);
+    // Each verify_frame call:
+    //   arg1 = value currently shifting out (DUT already captured it)
+    //   arg2 = value to present for the NEXT req to capture
+    verify_frame(32'h0000_0001,  32'h8000_8000);
+    verify_frame(32'h8000_8000,  32'h0000_0000);
+    verify_frame(32'h0000_0000,  32'hFFFF_FFFF);
+    verify_frame(32'hFFFF_FFFF,  32'hCAFE_FEED);
+    verify_frame(32'hCAFE_FEED,  32'hCAFE_FEED);
 
     for (integer i = 0; i < 25; i++) begin
-      verify_frame(sample);
+      verify_frame(32'hCAFE_FEED, 32'hCAFE_FEED);
     end
 
     repeat (10) @(posedge clk);
