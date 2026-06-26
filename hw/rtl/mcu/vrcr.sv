@@ -2,7 +2,7 @@
 // (c) Jason Wilden 2026
 //------------------------------------------------------------------------------
 `default_nettype none
-`include "defs.svh"
+`include "../defs.svh"
 
 module vrcr(
   input `VAR  logic         clk_i,
@@ -21,7 +21,7 @@ module vrcr(
 //------------------------------------------------------------------------------
 // Register map
 //------------------------------------------------------------------------------
-localparam CR = 4'h00;                // Control register
+localparam CR = 8'h00;                // Control register
 localparam CR_VRAM_UPDATE = 'h0;      // [0] : Update pipeline form VRAM
 
 //------------------------------------------------------------------------------

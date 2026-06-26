@@ -2,7 +2,7 @@
 // (c) Jason Wilden 2026
 //------------------------------------------------------------------------------
 `default_nettype none
-`include "defs.svh"
+`include "../defs.svh"
 
 module vram(
   input `VAR  logic         clk_i,
