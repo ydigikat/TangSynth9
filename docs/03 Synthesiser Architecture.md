@@ -35,7 +35,7 @@ The DCF (filter) is a zero delay feedback (ZDF) ladder implementation.
 
 #### Low frequency oscillator (LFO)
 
-The LFO is based on a fixed matrix design that I first encountered on the Yamaha CS20M which generates all waveforms concurrently, the target of the LFO selects the type and depth it wants but all share the single LFO rate and therefore have the same rate.  The LFO offers several waveforms:
+The LFO is based on a fixed matrix design that I first encountered on the Yamaha CS20M which generates all waveforms concurrently, the target of the LFO selects the type and depth it wants but all share the single LFO so run at the same rate.  The LFO offers several waveforms:
 
 - Triangle
 - Saw
