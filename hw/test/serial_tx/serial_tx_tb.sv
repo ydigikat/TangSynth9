@@ -4,7 +4,7 @@
 `default_nettype none 
 `timescale 1ns / 10ps
 
-module uart_tx_tb ();
+module serial_tx_tb ();
 
 //------------------------------------------------------------------------------
 // Test control
