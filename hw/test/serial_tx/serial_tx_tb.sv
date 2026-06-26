@@ -31,7 +31,7 @@ always #5 clk = ~clk;
 //------------------------------------------------------------------------------
 // Unit under test
 //------------------------------------------------------------------------------
-uart_tx uut (
+serial_tx uut (
   .clk_i(clk),
   .rst_ni(rst_n),
   .div_i(DVSR),
@@ -136,9 +136,9 @@ endtask
 // Test executor
 //------------------------------------------------------------------------------
 initial begin
-  $dumpfile("uart_tx.fst");
-  $dumpvars(0, uart_tx_tb);
-  $display("TESTBENCH: uart_tx_tb");
+  $dumpfile("serial_tx.fst");
+  $dumpvars(0, serial_tx_tb);
+  $display("TESTBENCH: serial_tx_tb");
 
   // Initialize
   rst_n = 0;

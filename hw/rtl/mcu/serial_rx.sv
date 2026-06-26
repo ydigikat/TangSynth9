@@ -94,7 +94,7 @@ always_comb begin
   rx_valid_d   = 1'b0;   // Pulse — clear every cycle
   rx_error_d   = rx_error;
 
-  unique case (state)
+  case (state)   // unique removed — not supported reliably in iverilog
 
     // Idle — line is high. A falling edge is a start-bit candidate.
     Idle: begin
@@ -114,19 +114,24 @@ always_comb begin
             state_d      = Data;
             sample_cnt_d = 4'd0;
             bit_cnt_d    = 3'd0;
-          end else begin            
+          end else begin
             state_d = Idle;
           end
         end else begin
           sample_cnt_d = sample_cnt + 4'd1;
         end
       end
-    end    
+    end
+
     Data: begin
       if (sample_inc) begin
         if (sample_cnt == 4'd15) begin
           sample_cnt_d = 4'd0;
-          data_d       = {rx_s1, data[7:1]};   // Shift right, MSB from line in
+          // Shift register: LSB-first from wire means each new bit enters at
+          // the MSB and shifts right. After 8 bits, data[0] holds the first
+          // received bit (LSB of the transmitted byte).
+          // Written without a part-select to avoid iverilog constant-select warning.
+          data_d = (data >> 1) | (rx_s1 ? 8'h80 : 8'h00);
           if (bit_cnt == 3'd7) begin
             state_d = Stop;
           end else begin
@@ -138,13 +143,13 @@ always_comb begin
       end
     end
 
-    // Stop bit line must be high framing error if not.
+    // Stop bit — line must be high; framing error if not.
     Stop: begin
       if (sample_inc) begin
         if (sample_cnt == 4'd7) begin
-          rx_valid_d   = rx_s1;          // Valid only if stop bit is high
-          rx_error_d   = !rx_s1;         // Framing error if not
-          state_d      = Idle;
+          rx_valid_d = rx_s1;
+          rx_error_d = !rx_s1;
+          state_d    = Idle;
         end else begin
           sample_cnt_d = sample_cnt + 4'd1;
         end

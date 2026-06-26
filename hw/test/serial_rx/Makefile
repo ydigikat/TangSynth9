@@ -7,12 +7,12 @@
 # additional modules add them to the ADDL variable.
 
 # UUT module name (no extension)
-MOD := serial_tx
+MOD := serial_rx
 
 # Directories
 CURDIR := $(shell pwd)
 BUILD_DIR := $(CURDIR)/build
-RTL_DIR := $(CURDIR)/../../rtl/mcu/
+RTL_DIR := $(CURDIR)/../../rtl/mcu
 
 # Source files (version controlled)
 UUT := $(RTL_DIR)/$(MOD).sv
