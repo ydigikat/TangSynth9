@@ -10,9 +10,11 @@ Each voice runs continously. Voices share the VRAM read port and summing mixer i
 
 ### Controller (VRAM Load Sequencer) 
 
-VRAM has a single port that must be shared across all voices.  A round-robin sequencer loads voice parameters into local registers within each voice module once per control-block.  This happens when the VRCR register signals that new data is available.
+The VRAM block is shared across all voices.  A round-robin sequencer loads voice parameters into local registers within each voice module once per control-block.  This happens when the VRCR register signals that new data is available.  VRAM is dual-ported with port-A used by the MCU and port-B by the audio pipeline.  Port-B is readonly.
 
 - One VRAM word (32-bits) is read per cycle.
+- Port A - CPU read write
+- Port B - Pipeline readonly
 - Data values are packed into words.  4x8 or 2x16, 1x32 bit values in each.
 - Words are organised into blocks for each voice and individual words addressed as ```voice # x VRAM_VOICE_STRICE + word idx```. 
 - Voices use their local registers during execution, VRAM is read only once per block.
