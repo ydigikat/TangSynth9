@@ -76,8 +76,6 @@ Unit tests are built with the Unity framework and invokved using the command ```
 
 I do not use AI for architecting, designing, or writing firmware or RTL.
 
-I do use Anthropic Claude for:
+I do use Anthropic Claude for expanding tests (I write the basics during development and Claude adds additional/edge coverage cases).
 
-- Expanding unit tests (I write the basics during development and Claude adds additional/edge coverage cases).
-- Checking grammar and spelling in documentation.
 
