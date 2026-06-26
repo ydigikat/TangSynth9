@@ -25,7 +25,7 @@ typedef uint32_t Q1_24;
  * 16x16 multiply widens to 32 bits (fits a single PicoRV32 MUL instruction),
  * then shift right 15 to bring back to Q1.15.
  */
-inline int16_t q15_mul(int16_t a, int16_t b)
+static inline int16_t q15_mul(int16_t a, int16_t b)
 {
   int32_t result = (int32_t)a * (int32_t)b;
   return (int16_t)(result >> Q15_SHIFT);
