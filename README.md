@@ -71,3 +71,13 @@ The firmware tools are used to build the firmware binary and unit tests. Firmwar
 The firmware build is scripted using ```CMake``` & ```Ninja``` and invoked using the command ```cmake```  
 
 Unit tests are built with the Unity framework and invokved using the command ```cmake```
+
+### AI Disclosure
+
+I do not use AI for architecting, designing, or writing firmware or RTL.
+
+I do use Anthropic Claude for:
+
+- Generating unit tests.
+- Checking grammar and spelling in documentation.
+

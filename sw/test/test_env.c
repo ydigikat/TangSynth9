@@ -1,6 +1,6 @@
 /*
  * (c) Jason Wilden, 2026
- *
+ * 
  * Unity unit tests for the envelope generator module.
  *
  * The envelope uses Nigel Redmon's asymptotic exponential algorithm ported

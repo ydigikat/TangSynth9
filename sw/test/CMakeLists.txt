@@ -8,7 +8,12 @@ set(SYNTH_COMMON
     ${FW_SRC}/synth/params.c
 )
 
-foreach(TEST_SRC test_midi.c test_voice.c test_synth.c test_lfo.c test_env.c)
+foreach(TEST_SRC test_midi.c 
+                test_voice.c 
+                test_synth.c 
+                test_lfo.c 
+                test_env.c 
+                test_params.c)
     get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
 
     if(TEST_SRC STREQUAL "test_midi.c")
@@ -35,6 +40,12 @@ foreach(TEST_SRC test_midi.c test_voice.c test_synth.c test_lfo.c test_env.c)
             ${FW_SRC}/synth/env.c
             ${FW_SRC}/synth/luts.c
         )
+    elseif(TEST_SRC STREQUAL "test_params.c")
+        set(TEST_DEPS
+        ${FW_SRC}/synth/params.c
+        ${FW_SRC}/synth/luts.c
+        ${FW_SRC}/synth/midi.c
+    )
     endif()
 
     add_executable(${TEST_NAME}
