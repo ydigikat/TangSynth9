@@ -17,6 +17,10 @@ static param_value_t params[PARAM_COUNT];
 #define VEL_MF    64
 #define VEL_FF   100
 
+/* -------------------------------------------------------------------------
+ * Fixture setup/teardown
+ * ---------------------------------------------------------------------- */
+
 void setUp(void)
 {
   param_create_default_patch(params);
