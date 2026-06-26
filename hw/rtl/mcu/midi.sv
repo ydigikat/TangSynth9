@@ -2,7 +2,7 @@
 // (c) Jason Wilden 2026
 //------------------------------------------------------------------------------
 `default_nettype none
-`include "defs.svh"
+`include "../defs.svh"
 
 module midi(
   input `VAR  logic   clk_i,
@@ -23,9 +23,9 @@ module midi(
 //------------------------------------------------------------------------------
 // Register offsets  (word-addressed via addr[5:2])
 //------------------------------------------------------------------------------
-localparam CR = 4'h00;   // Control  : [10:0] baud divisor
-localparam SR = 4'h01;   // Status   : [0] rx_valid, [1] framing error
-localparam RD = 4'h02;   // RX data  : [7:0] received byte
+localparam CR = 8'h00;   // Control  : [10:0] baud divisor
+localparam SR = 8'h01;   // Status   : [0] rx_valid, [1] framing error
+localparam RD = 8'h02;   // RX data  : [7:0] received byte
 
 //------------------------------------------------------------------------------
 // Decode

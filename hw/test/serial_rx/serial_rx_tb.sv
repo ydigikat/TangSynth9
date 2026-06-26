@@ -1,13 +1,21 @@
 //------------------------------------------------------------------------------
 // Jason Wilden 2026
 //------------------------------------------------------------------------------
+// 1. Verify reset state
+// 2. Verify idle line state
+// 3. Verify false start (glitch on line)
+// 4. Verify single byte
+// 5. Verify multiple bytes
+// 6. Verify framing error
+//------------------------------------------------------------------------------
+
 `default_nettype none
 `timescale 1ns / 10ps
 
 module serial_rx_tb ();
 
 //------------------------------------------------------------------------------
-// Test control
+// Test control counts
 //------------------------------------------------------------------------------
 integer test_failures = 0;
 integer test_count    = 0;
@@ -50,10 +58,7 @@ serial_rx uut (
 );
 
 //------------------------------------------------------------------------------
-// Persistent monitors
-// monitor_clear lets tasks reset the flags cleanly between tests.
-// The always block owns all writes to the flag registers so there
-// is no procedural/clocked driver conflict.
+// Monitors
 //------------------------------------------------------------------------------
 logic       monitor_clear   = 1'b0;
 logic       rx_valid_seen;
@@ -75,8 +80,7 @@ always @(posedge clk) begin
   end
 end
 
-// Assert monitor_clear for one clock cycle, straddling a negedge so the
-// posedge of the same cycle sees it cleanly without racing rx_valid.
+// Assert monitor_clear for one clock cycle.
 task automatic clear_monitors;
   @(negedge clk); #1;
   monitor_clear = 1'b1;
@@ -84,11 +88,8 @@ task automatic clear_monitors;
   monitor_clear = 1'b0;
 endtask
 
-//------------------------------------------------------------------------------
-// drive_byte — UART frame: START(0) | D0..D7 | STOP(1)
-// rx_valid fires at the stop-bit midpoint, still inside this task.
-// The persistent monitor catches it; tasks check rx_valid_seen after returning.
-//------------------------------------------------------------------------------
+
+// drive_byte, single UART frame
 task automatic drive_byte(logic [7:0] data);
   @(posedge clk); #1;
   rx_i = 1'b0;
@@ -103,9 +104,8 @@ task automatic drive_byte(logic [7:0] data);
   repeat (BIT_CLOCKS) @(posedge clk);
 endtask
 
-//------------------------------------------------------------------------------
-// drive_framing_error — stop bit held low
-//------------------------------------------------------------------------------
+
+// cause a framing error — stop bit held low
 task automatic drive_framing_error(logic [7:0] data);
   @(posedge clk); #1;
   rx_i = 1'b0;
@@ -126,6 +126,8 @@ endtask
 //------------------------------------------------------------------------------
 // Tests
 //------------------------------------------------------------------------------
+
+// 1. Verify reset state
 task automatic verify_reset_state;
   @(posedge clk); #1;
 
@@ -137,6 +139,7 @@ task automatic verify_reset_state;
   test_count++;
 endtask
 
+// 2. Verify idle line state
 task automatic verify_idle_line;
   logic fired = 0;
 
@@ -152,6 +155,7 @@ task automatic verify_idle_line;
   test_count++;
 endtask
 
+// 3. Verify false start - glitch on line
 task automatic verify_false_start;
   logic fired = 0;
 
@@ -178,6 +182,7 @@ task automatic verify_false_start;
   test_count++;
 endtask
 
+// 4. Verify single byte
 task automatic verify_single_byte;
   logic [7:0] expected = 8'hA5;
 
@@ -199,6 +204,7 @@ task automatic verify_single_byte;
   test_count++;
 endtask
 
+// 5. Verify multiple bytes
 task automatic verify_multiple_bytes;
   logic [7:0] tx_byte;
 
@@ -224,6 +230,7 @@ task automatic verify_multiple_bytes;
   test_count++;
 endtask
 
+// 6. Verify framing error
 task automatic verify_framing_error;
   clear_monitors();
   drive_framing_error(8'hFF);

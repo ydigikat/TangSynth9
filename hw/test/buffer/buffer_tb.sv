@@ -1,12 +1,22 @@
 //------------------------------------------------------------------------------
 // Jason Wilden 2025
 //------------------------------------------------------------------------------
-`default_nettype none `timescale 1ns / 10ps
+// 1. Verify that the buffer is correct after reset
+// 2. Verify a single write followed by read operation
+// 3. Verify the bufffer is filled by the correct number of writes
+// 4. Verify bufffer draining
+// 5. Verify write to full buffer is handled correctly
+// 6. Verify read when empty
+// 7. Verify wrap around behaviour
+//------------------------------------------------------------------------------
+
+`default_nettype none 
+`timescale 1ns / 10ps
 
 module buffer_tb ();
 
   //------------------------------------------------------------------------------
-  // Test control
+  // Test control counts
   //------------------------------------------------------------------------------
   integer test_failures = 0;
   integer test_count = 0;
@@ -41,7 +51,7 @@ module buffer_tb ();
   end
 
   //------------------------------------------------------------------------------
-  // Unit under test
+  // Unit under test instance
   //------------------------------------------------------------------------------
   buffer #(
       .BUF_SIZE(BUF_SIZE),
@@ -61,6 +71,7 @@ module buffer_tb ();
   // Tests
   //------------------------------------------------------------------------------
 
+  // 1. Verify that the buffer is correct after reset
   task automatic verify_reset_state;
     test_count++;    
 
@@ -79,6 +90,7 @@ module buffer_tb ();
     
   endtask
 
+  // 2. Verify a single write followed by read operation
   task automatic verify_single_write_read;
     logic [DATA_WIDTH-1:0] test_value;
 
@@ -121,6 +133,7 @@ module buffer_tb ();
     end
   endtask
 
+  // 3. Verify the bufffer is filled by the correct number of writes
   task automatic verify_fill_buffer;
     integer i;
 
@@ -148,6 +161,8 @@ module buffer_tb ();
     end
   endtask
 
+
+  // 4. Verify bufffer draining
   task automatic verify_drain_buffer;
     integer i;
 
@@ -188,6 +203,8 @@ module buffer_tb ();
 
   endtask
 
+
+  // 5. Verify write to full buffer is handled correctly
   task automatic verify_write_when_full;
     integer i;
     
@@ -235,6 +252,7 @@ module buffer_tb ();
     end    
   endtask
 
+  // 6. Verify read when empty is benign
   task automatic verify_read_when_empty;    
 
     test_count++;     
@@ -254,6 +272,7 @@ module buffer_tb ();
     
   endtask
 
+  // 7. Verify wrap around behaviour
   task automatic verify_wraparound;
     integer i;
 

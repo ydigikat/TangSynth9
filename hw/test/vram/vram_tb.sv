@@ -1,17 +1,13 @@
 //------------------------------------------------------------------------------
-// vram_tb.sv — Testbench for vram / vram_block
-//
-// Tests:
-//   1. verify_reset_state       — cpu_ready deasserted, pipe_valid deasserted
-//   2. verify_cpu_write_read    — full 32-bit write via CPU port, readback
-//   3. verify_wstrb_lanes       — each byte lane independently (wstrb 4'b0001..1000)
-//   4. verify_pipe_read         — pipeline port reads data previously written by CPU
-//   5. verify_dual_port_concurrent — CPU writes and pipe reads simultaneously,
-//                                    no collision; confirms port independence
-//   6. verify_ready_timing      — cpu_ready is exactly one cycle after cpu_select_i
-//   7. verify_pipe_valid_timing — pipe_valid is exactly one cycle after reset release
-//   8. verify_address_decode    — byte-to-word address translation (cpu_addr[9:2])
-//   9. verify_multiple_locations — scattered writes, verify all locations correct
+//   1. Verify reset state
+//   2. Verify MCU write and read
+//   3. Verify WSTRB lanes
+//   4. Verify pipeline read       
+//   5. Verify dual port concurrent read
+//   6. Verify ready timing signal
+//   7. Verify pipe valid signal timing
+//   8. Verify address decode
+//   9. Verify multiple locations. 
 //------------------------------------------------------------------------------
 `default_nettype none
 `timescale 1ns / 10ps
@@ -66,7 +62,7 @@ module vram_tb ();
   end
 
   //----------------------------------------------------------------------------
-  // DUT instantiation
+  // UUT instantiation
   //----------------------------------------------------------------------------
   vram u_vram (
     .clk_i         (clk),

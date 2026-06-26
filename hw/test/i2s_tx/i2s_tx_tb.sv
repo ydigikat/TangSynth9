@@ -1,13 +1,18 @@
 //------------------------------------------------------------------------------
 // Jason Wilden 2025
 //------------------------------------------------------------------------------
+// 1. Verify LRCLK
+// 2. Verify_sample_req 
+// 3. Verify Frame
+//------------------------------------------------------------------------------
+
 `default_nettype none
 `timescale 1ns / 10ps
 
 module i2s_tx_tb ();
 
   //------------------------------------------------------------------------------
-  // Test control
+  // Test control counts
   //------------------------------------------------------------------------------
   integer test_failures = 0;
   integer test_count    = 0;
@@ -50,8 +55,10 @@ module i2s_tx_tb ();
   end
 
   //------------------------------------------------------------------------------
-  // verify_lrclk — unchanged
+  // Tests
   //------------------------------------------------------------------------------
+
+  // 1. Verify LRCLK
   task automatic verify_lrclk;
     integer bclk_edge_count = 0;
 
@@ -77,9 +84,8 @@ module i2s_tx_tb ();
     test_count++;
   endtask
 
-  //------------------------------------------------------------------------------
-  // verify_sample_req — unchanged
-  //------------------------------------------------------------------------------
+  
+  // 2. Verify_sample_req 
   task automatic verify_sample_req;
     integer bclk_edge_count = 0;
     time    end_time;
@@ -109,34 +115,21 @@ module i2s_tx_tb ();
     test_count++;
   endtask
 
-  //------------------------------------------------------------------------------
-  // verify_frame
-  //
-  // The DUT latches sample_i on the SAME clk edge that req_o pulses.
-  // Therefore sample_i must already be valid BEFORE req arrives.
-  //
-  // Protocol:
-  //   - frame_to_verify : pattern currently being shifted out (sample_i was
-  //                        already captured by the DUT on the previous req)
-  //   - next_sample     : value to place on sample_i for the NEXT req to capture
-  //
-  // We set next_sample immediately after req is seen (req will deassert next
-  // cycle; sample_i is stable long before the next req, which is a full frame
-  // = 32 BCLKs = 512 clk cycles away).
-  //------------------------------------------------------------------------------
+
+  // 3. Verify Frame
   task automatic verify_frame(logic [31:0] frame_to_verify, logic [31:0] next_sample);
     logic   failed = 0;
     integer i      = 31;
 
-    // Wait for req pulse (sample_i already captured by DUT on this edge).
+    // Wait for req pulse 
     wait (req);
 
-    // Step past req so we're not racing the same edge, then drive next frame.
+    // Step past req before driving next frame.
     @(posedge clk);
     #1;
     sample = next_sample;
 
-    // Now verify the 32 bits shifting out for this frame.
+    // 32 bits shifting out for this frame.
     repeat (32) begin
       @(negedge aud_bclk);
       #1;
@@ -159,9 +152,7 @@ module i2s_tx_tb ();
     $dumpfile("i2s_tx_tb.fst");
     $dumpvars(0, i2s_tx_tb);
     $display("TESTBENCH: i2s_tx_tb");
-
-    // Prime sample_i BEFORE the first req so the DUT captures it correctly.
-    // The DUT latches sample_i on the same cycle req fires; we must be ahead.
+    
     sample = 32'h0000_0001;
 
     wait (rst_n);
@@ -169,10 +160,6 @@ module i2s_tx_tb ();
 
     verify_lrclk();
     verify_sample_req();
-
-    // Each verify_frame call:
-    //   arg1 = value currently shifting out (DUT already captured it)
-    //   arg2 = value to present for the NEXT req to capture
     verify_frame(32'h0000_0001,  32'h8000_8000);
     verify_frame(32'h8000_8000,  32'h0000_0000);
     verify_frame(32'h0000_0000,  32'hFFFF_FFFF);

@@ -129,6 +129,8 @@ proc run_tests {test_dir} {
         }
     }
     
+     puts "==========================================================================="
+
     if {$test_count == 0} {
         puts "## WARNING: No tests found in $test_dir"
     } elseif {$test_failed} {
@@ -138,7 +140,7 @@ proc run_tests {test_dir} {
         puts "## All $test_count testbenches passed"
     }
     
-    puts "==================================\n"
+    puts "===========================================================================\n"
 }
 
 # Diagnostics

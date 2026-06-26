@@ -78,6 +78,6 @@ I do not use AI for architecting, designing, or writing firmware or RTL.
 
 I do use Anthropic Claude for:
 
-- Generating unit tests.
+- Expanding unit tests (I write the basics during development and Claude adds additional/edge coverage cases).
 - Checking grammar and spelling in documentation.
 
