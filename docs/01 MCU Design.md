@@ -135,15 +135,14 @@ It does not apply these directly to their destinations but instead writes them t
 
 **Pipeline runs all DSP.**
 
-At a block boundary the pipeline reads values and configuration from VRAM and computes modulated values,  pitch, filter cutoff, VCA level etc before running the sample-rate signal chain. 
+At a control block boundary the pipeline reads values and configuration from VRAM and computes modulated values,  pitch, filter cutoff, VCA level etc before running the sample-rate signal chain. 
 
 Depth scaling, any non-linear shaping of modulator outputs, and per-sample
 interpolation between block values are all pipeline responsibilities.
 
-Pre-multiplying each modulator output by its destination depth on the MCU might
-have saved a small number of pipeline multiply operations but would also have moved part of the DSP signal decisions into firmware breaking the clean boundary.
+Pre-multiplying each modulator output by its destination depth on the MCU could perhaps have saved a small number of pipeline multiply operations but would also have moved this aspect of DSP into firmware breaking the clean boundary between the MCU and audio pipeline.
 
-The pipeline's hardware 18×18 DSP multipliers are also useful for these multiplications and the values have been sized to infer use of these.
+The pipeline's hardware 18×18 DSP multipliers, which the Picorv32 does not use, are also valuable for optimising these multiplications and the values have been sized to infer use of these.
 
 **Temporal Safety**
 
