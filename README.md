@@ -16,6 +16,7 @@ It also serves as an exploration of some audio techniques, a learning and work-b
 ### Current Status
 
 - 24/06/2026 - Started building out the basic SOC framework.
+- 05/07/2026 - Audio pipeline, MIDI in and VRAM integration.
 
 ### Tooling
 
