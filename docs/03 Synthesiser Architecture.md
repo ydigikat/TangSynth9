@@ -1,8 +1,14 @@
 # Synthesiser Architecture
 
-The template synthesiser is a fully functional, albeit simple, vintage analogue style design.  
+The template synthesiser is a fully functional, albeit straightforward, classic (analogue) style design.  
 
-It does not model any specific synthesiser nor does it use sophisticated DSP to obtain an analogue sound.  It serves mainly to demonstrate how the template may be used.
+It does not model any specific synthesiser nor does it use sophisticated DSP to obtain an analogue sound however it does use a few simple techniques to achieve some semblance of a classic sound.
+
+It provides 4-voice polyphony with monophonic and unison voice modes.
+
+Performance controls include modulation, bend, glide and portamento.
+
+![Synth Block Diagram](assets/images/synth_blocks.svg)
 
 #### Oscillator (DCO)
 
@@ -19,9 +25,13 @@ DCOs can be pitched individually allowing detuning and provide pitch modulation 
 
 #### Envelope Generators
 
+Separate amp and modulation envelope generators are provided.
+
 The envelope generators have an analogue style exponential segment curve based on Nigel Redmon's algorithm and are a standard 4-segment (ADSR) design.
 
-The generator has 4 output modes:  
+The amp envelope has a single output mode for use with a DCA.
+
+The modulation generator has 4 output modes:  
 
 - Normal: Standard ADSR.
 - Biased: Intended for pitch modulation.
@@ -31,11 +41,19 @@ The generator has 4 output modes:
 
 #### Filter (DCF)
 
-The DCF (filter) is a zero delay feedback (ZDF) ladder implementation. 
+The DCF (filter) is a 4-pole, low-pass, zero delay feedback (ZDF) ladder implementation. The filter is resonant and will go into feedback on high Q values.
+
+The filter can be modulated by LFO and EG as well as by tracking keyboard pitch and velocity.  The EG can be inverted and biased.
 
 #### Low frequency oscillator (LFO)
 
-The LFO is based on a fixed matrix design that I first encountered on the Yamaha CS20M which generates all waveforms concurrently, the target of the LFO selects the type and depth it wants but all share the single LFO so run at the same rate.  The LFO offers several waveforms:
+The LFO is based on pattern that I first encountered on the Yamaha CS20M which generates all waveforms concurrently. 
+
+A target using the LFO will select an LFO wave type and depth but has no control over LFO rate which is global.
+
+The modulation matrix is fixed.  Most modules have only a single target for modulation except the DCOs which have separate targets for pitch and pulse-width.
+
+The LFO generates 5 waveform types:
 
 - Triangle
 - Saw
@@ -48,3 +66,6 @@ The LFO is based on a fixed matrix design that I first encountered on the Yamaha
 
 The DCA provides amplitude modulation (tremolo) but is otherwise just a simple level control.
 
+#### Performance Controls
+
+TODO.
