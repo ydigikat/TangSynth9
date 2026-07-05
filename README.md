@@ -62,7 +62,7 @@ The firmware tools are used to build the firmware binary and unit tests. Firmwar
 | Tool  | Purpose |Notes |
 | ----  | ----- | ---- |
 | riscv32-unknown-elf-gcc | Cross-Compiler | Builds the RISCV32I firmware binary |
-| gcc | Native Compiler| Builds the Unity unit-tests|
+| x86_64-linux-gnu-gcc-11 | Native Compiler| Builds the Unity unit-tests|
 | cmake | Build | Build configuration|
 | ninja | Build | Build orchestration|
 | bin_to_hex.py | Handoff |  Split & binary handoff to hardware|

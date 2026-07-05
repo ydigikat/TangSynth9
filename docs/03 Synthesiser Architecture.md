@@ -10,6 +10,7 @@ Performance controls include modulation, bend, glide and portamento.
 
 ![Synth Block Diagram](assets/images/synth_blocks.svg)
 
+
 #### Oscillator (DCO)
 
 Dual DCOs provide the basic waveforms typically found on early synthesisers with optional saturation/jitter to add a little analogue edge to them.  
@@ -105,4 +106,47 @@ The stereo panning is somewhat pointless as the template does not implement any 
 | Mono | Monophonic mode, voice stack (trill) support |
 | Legato | Monophonic legato mode (glide) |
 | Unison | 4-voice unison, fixed detune|
+
+## Synth Specification
+
+4-voice polyphony.
+
+| Module | Param | Notes |
+| ------ | ----- | ----- |
+| DCO1 & DCO2 | Waveform | Triangle, Saw, Pulse |
+|          | Level  | 0:10 |
+|          | Octave | -2:2 |
+|          | Pitch  | -6:6 |  
+|          | Cents  | -50:50|
+|          | PW     | 5:95% (pulse only)|
+|          | Mod    | LFO, EG |
+|          | PW Mod | LFO |
+| DCO1     | Bypass | Filter bypass mode |
+| DCO2     | Shape  | Wave shaper |
+| Noise    | Level  | Even spectrum white noise |
+| Shaper   | Shape  | Off, Clip, Rectify, Decimate|
+|          | Mod    | LFO, EG|
+| DCF      | Type   | 4-pole LFP ladder (ZDF)|
+|          | Cutoff | 0-20kHz
+|          | Res    | 0:10 resonant feedback at hight Q|
+|          | Mod    | LFO, EG, Key Track, Velocity Track |
+| AMP & MOD EG   | Attack | 0:8s|
+|          | Decay | 0:8s|
+|          | Sustain | 0:10|
+|          | Release | 0:8s|
+| MOD EG   | Mode    | Normal, Biased, Inverted, Biased+Inverted|
+| DCA      | Level   | 0:10|
+|          | Mod     | LFO, EG |
+| Mod Wheel | Target | Assigned to modulation depth|
+| Bend Wheel | Pitch  | -12:12, -5:5, -3:3 |
+| Portamento | Range | |
+|           | Time | |
+| Voice | Mode | Poly, Mono, Mono-Legato, Unison|
+|       | Spread | 0:20 unison spread cents|
+
+
+
+## MIDI IMPLEMENTATION CHART
+
+
 
