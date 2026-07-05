@@ -64,8 +64,22 @@ The LFO generates 5 waveform types:
 
 #### Amplifier (DCA)
 
-The DCA provides amplitude modulation (tremolo) but is otherwise just a simple level control.
+The DCA shapes the output sound using the amp EG and LFO.  It also controls the master output level and stereo panning.
 
-#### Performance Controls
+The stereo panning is somewhat pointless as the template does not implement any stereo FX so it simply shifts the audio from left to right in the stereo spectrum.
 
-TODO.
+#### Performance Controls & Voice Modes
+
+| Control | Notes |
+| ------- | ----- |
+| ModWheel | Increases effect of LFO |
+| Bend | Separate +/- bend range |
+| Portamento | Typical portamento effect |
+
+| Mode | Notes |
+| ---- | ----- |
+| Poly | 4-voice polyphonic, oldest voice steal|
+| Mono | Monophonic mode, voice stack (trill) support |
+| Legato | Monophonic legato mode (glide) |
+| Unison | 4-voice unison, fixed detune|
+
