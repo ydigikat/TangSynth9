@@ -85,7 +85,7 @@ void synth_handle_midi(struct synth *synth, struct midi_msg *msg)
  */
 void synth_tick(struct synth *synth)
 {
-#pragma GCC unroll 8
+#pragma GCC unroll 4
   for (int i = 0; i < MAX_VOICES; i++)
   {
     if(synth->voice->state != VOICE_IDLE)
@@ -96,16 +96,30 @@ void synth_tick(struct synth *synth)
 }
 
 /*
- * Executes the control-rate calculation cycle by counting the interrupts.
+ * Executes the control-rate calculation block. Control rate signals start
+ * recalculations at the start of the block (interrupt 1) and must be completed
+ * by the end of the control block (interrupt 48).   
+ * 
+ * At the end of the block, the calculated values are gated into VRAM and the
+ * VRCR register used to indicate that new values are ready.
+ * 
+ * Control signals therefore apply to a block of 48 samples in the audio
+ * pipeline.  Both control rate signals and any parameter changes, MIDI
+ * events are passed at the end of the control block.
+ * 
+ * MIDI events are not timestamped so MIDI slicing is not possible.  Last
+ * event in block wins.
+ * 
+ * The 48 cycle control block is ~1ms in length. 
  */
-uint8_t synth_execute_cycle(struct synth *synth, uint8_t irq_count)
+uint8_t synth_run_control_block(struct synth *synth, uint8_t irq_count)
 {
   TRACE_ASSERT(synth);
 
   if (irq_count == 1U)
   {
     /*
-     * On the first interrupt of a cycle we:
+     * On interrupt 1 in the control block:
      *
      * - set the VCR register to stop the audio pipeline updating from VRAM
      * - parse any buffered MIDI events
@@ -135,9 +149,9 @@ uint8_t synth_execute_cycle(struct synth *synth, uint8_t irq_count)
   else if (irq_count == LAST_IRQ_IN_CYCLE)
   {
     /*
-     * On the last interrupt of the cycle we:
+     * On interrupt 48 in the control block:
      *
-     * - set the VCR register so the pipeline updates before next sample
+     * - set the VRCR register so the pipeline updates before next sample
      * - reset the sample counter.
      */
     SET_BIT(VRCR->CR, VRCR_CR_VRAM_UPDATE);
@@ -154,6 +168,9 @@ uint8_t synth_execute_cycle(struct synth *synth, uint8_t irq_count)
  *   1. Voice already playing this note (retrigger)
  *   2. Free (idle) voice
  *   3. Oldest active voice (steal)
+ * 
+ * In the event of a tie on the oldest voice, the lowest voice number (1-4, not pitch) 
+ * is stolen.
  *
  * Voice age tracking: When allocating a new or stolen voice, all active voices
  * age by one generation. This relative lifetime counter identifies the longest-
@@ -166,6 +183,7 @@ static void note_on(struct synth *synth, uint8_t note, uint8_t velocity)
   voice = find_voice_by_note(synth, note);
   if (voice)
   {
+    // Note already sounding - retrigger (player is mashing finger on same note)
     voice_note_on(voice, note, velocity);
     return;
   }
@@ -173,6 +191,7 @@ static void note_on(struct synth *synth, uint8_t note, uint8_t velocity)
   voice = find_free_voice(synth);
   if (voice)
   {
+    // New note - assign to unused voice.
     age_voices(synth);
     voice_note_on(voice, note, velocity);
     return;
@@ -181,6 +200,7 @@ static void note_on(struct synth *synth, uint8_t note, uint8_t velocity)
   voice = find_oldest_active_voice(synth);
   if (voice)
   {
+    // New note - no unused voices, we'll steal the oldest and assign to it.
     age_voices(synth);
     voice_note_on(voice, note, velocity);
     return;
@@ -206,7 +226,7 @@ static void note_off(struct synth *synth, uint8_t note)
 /*
  * Update the voice parameters.
  *
- * Call each voice to update their internal state and those of the signal
+ * Call each voice to update their internal state and those of the modulation
  * chain directly. The voice manages voice parameter updates entirely.
  */
 void update_voice_params(struct synth *synth)
@@ -237,7 +257,7 @@ static inline struct voice *find_free_voice(struct synth *synth)
 
 /*
  * Find the longest-running active voice for stealing.
- * Only considers ACTIVE voices - voices mid-release are excluded.
+ * Only considers ACTIVE voices - voices mid-steal are excluded.
  */
 static inline struct voice *find_oldest_active_voice(struct synth *synth)
 {

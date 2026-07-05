@@ -31,7 +31,7 @@ int main(void)
 
   while (1)
   {
-    irq_count = synth_execute_cycle(&synth, irq_count);
+    irq_count = synth_run_control_block(&synth, irq_count);
   }
 
   /*NOTREACHED*/
