@@ -142,7 +142,7 @@ interpolation between block values are all pipeline responsibilities.
 
 Pre-multiplying each modulator output by its destination depth on the MCU could perhaps have saved a small number of pipeline multiply operations but would also have moved this aspect of DSP into firmware breaking the clean boundary between the MCU and audio pipeline.
 
-The pipeline's hardware 18×18 DSP multipliers are also useful for these multiplications and the values have been sized to infer use of these.
+The pipeline's hardware 18×18 DSP multipliers, which the Picorv32 does not use, are also valuable for optimising these multiplications and the values have been sized to infer use of these.
 
 **Temporal Safety**
 
