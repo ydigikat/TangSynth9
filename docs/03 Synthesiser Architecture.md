@@ -53,6 +53,13 @@ A target using the LFO will select an LFO wave type and depth but has no control
 
 The modulation matrix is fixed.  Most modules have only a single target for modulation except the DCOs which have separate targets for pitch and pulse-width.
 
+| Module | Target |
+| ------ | ------ |
+| DCO    | Pitch  | 
+| DCO    | PW (pulse wave only)|
+| DCF    | Cutoff |
+| DCA    | Amplitude |
+
 The LFO generates 5 waveform types:
 
 - Triangle
