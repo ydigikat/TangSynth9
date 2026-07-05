@@ -94,7 +94,7 @@ always_comb begin
   rx_valid_d   = 1'b0;   // Pulse — clear every cycle
   rx_error_d   = rx_error;
 
-  case (state)   // unique removed — not supported reliably in iverilog
+  case (state)   // unique not supported reliably in iverilog
 
     // Idle — line is high. A falling edge is a start-bit candidate.
     Idle: begin
