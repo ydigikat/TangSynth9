@@ -75,10 +75,45 @@ The firmware build is scripted using ```CMake``` & ```Ninja``` and invoked using
 
 Unit tests are built with the Unity framework and invokved using the command ```cmake```
 
-### AI Disclosure
+### VS Code Extensions (Optional)
+These are entirely optional since the build works without them, however for a rich IDE type environment they are helpful. 
 
-I do not use AI for architecting, designing, or writing firmware or RTL.
+I do not provide an ```extensions.json``` file because there is no way to pin an extension to a version and (bizarrely) this is not considered an issue by the maintainers, despite it completely rendering the capability pointless - may as well remove it.  
 
-I do use Anthropic Claude for expanding tests (I write the basics during development and Claude adds additional/edge coverage cases).
+```
+<snarky> 
+They are all too busy presumably stuffing more unwanted AI into the editor. 
+</snarky>
+```
+
+Instead I recommend you run the individual commands to install them.  At the time of writing only the HDL extension needs to be pinned to a fixed version - it is being regularly updated and breaking changes are common.  I am pinned at the version that uses  ```svls (Dalance)``` rather than the more recent ```slang``` which is more capable but requires more configuration.
+
+```sh
+
+# HDL support
+code --install-extension mshr-h.veriloghdl@1.27.4
+code --install-extension dalance.svls-vscode
+code --install-extension lramseyer.vaporview
+
+# C/C++ & RISC ASM support
+code --install-extension ms-vscode.cmake-tools
+code --install-extension ms-vscode.cpptools-extension-pac
+code --install-extension zixuanwang.linkerscript
+code --install-extension trond-snekvik.gnu-mapfiles
+code --install-extension davidegrayson.riscv-asm
+
+# Python support
+code --install-extension ms-python.python
+
+# Others (TCL, Monitor etc)
+code --install-extension rashwell.tcl
+code --install-extension ms-vscode.vscode-serial-monitor
+```
+
+### AI Usage Disclosure
+
+I <u>do not</u> use AI for architecting, designing, coding or documenting my synthesisers, firmware or RTL.
+
+I do use AI to expand test coverage having written the basic tests myself (test-driven).
 
 
