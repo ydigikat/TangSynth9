@@ -22,18 +22,13 @@ The interrupts and shared voice RAM decouples the MCU from the audio pipeline an
 
 There is no DAE or audio DSP in the MCU (firmware) as sample generation and output is entirely the concern of the audio pipeline. 
 
-#### MCU Components
+#### MCU Modules
 
-The MCU is built around the [Yosys PicoRV32](https://github.com/YosysHQ/picorv32) soft-core processor with a set of solution specific MMIO modules:
+The MCU is built around the [Yosys PicoRV32](https://github.com/YosysHQ/picorv32) soft-core processor with a set of solution specific MMIO modules.
 
-| Module | Purpose |
-| ------ | ------- |
-| SRAM   | CPU SRAM (BRAM) |
-| VRAM   | Shared Voice RAM |
-| VRCR   | VRAM control register |
-| TRACE  | Serial-tx module (used for debug/trace) |
-| MIDI   | Serial-rx module (used for MIDI in) |
-| GPO    | On-board LEDs and misc IO|
+See [MCU Modules](<02 MCU Modules.md>)
+
+
 
 
 ## Fixed Point Types

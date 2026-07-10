@@ -8,10 +8,10 @@ module midi(
   input `VAR  logic   clk_i,
   input `VAR  logic   rst_ni,
 
-  input  `VAR logic        select_i,
   input  `VAR logic        rx_i,
   output      logic        irq_o,
 
+  input  `VAR logic        select_i,
   output      logic        mem_ready_o,
   input  `VAR logic [3:0]  mem_wstrb_i,
   input  `VAR logic [31:0] mem_addr_i,

@@ -299,7 +299,8 @@ assign trap_o = trap;
 
 
 // Debugging
-assign debug_o[0] = irq[4];
-assign debug_o[15:1] = 0;
+assign debug_o[0] = midi_i;
+assign debug_o[1] = midi_irq;
+assign debug_o[15:2] = 'd0;
 endmodule
 `default_nettype wire
