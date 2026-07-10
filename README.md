@@ -48,7 +48,7 @@ The hardware toolchain is used to build and program/flash the FPGA bitstream.
 | gtkwave | Simulation| Hardware tracing/analysis|
 | Verilator| Linting | Static HDL source analysis|
 
-*The Gowin EDA tools are not open source but have a free license for non-commercial use.  Gowin generates a more optimal implementation than Yosys/Apicula open source tooling (for the present)*
+*While the Gowin EDA tools are not open source, they do provide a free license for non-commercial use.  I use this because Gowin generates a more optimally sized implementation than Yosys/Apicula open source tooling (for the present) and space is constrained on this device.*
 
 The build is scripted using ```/hw/tools/build.tcl.``` and invoked using the command ```gw_sh /hw/tools/build.tcl -flags```
 
@@ -78,29 +78,24 @@ Unit tests are built with the Unity framework and invokved using the command ```
 ### VS Code Extensions (Optional)
 These are entirely optional since the build works without them, however for a rich IDE type environment they are helpful. 
 
-I do not provide an ```extensions.json``` file because there is no way to pin an extension to a version and (bizarrely) this is not considered an issue by the maintainers, despite it completely rendering the capability pointless - may as well remove it.  
+I do not provide an ```extensions.json``` file because there is no way to pin an extension to a version and this is not considered worth addressing by the maintainers. 
 
-```
-<snarky> 
-They are all too busy presumably stuffing more unwanted AI into the editor. 
-</snarky>
-```
+Instead I recommend you run the individual commands to install extensions which allows some of them to be pinned to specific versions.  This is usually because an update can break configuration.
 
-Instead I recommend you run the individual commands to install them.  At the time of writing only the HDL extension needs to be pinned to a fixed version - it is being regularly updated and breaking changes are common.  I am pinned at the version that uses  ```svls (Dalance)``` rather than the more recent ```slang``` which is more capable but requires more configuration.
 
 ```sh
 
 # HDL support
 code --install-extension mshr-h.veriloghdl@1.27.4
-code --install-extension dalance.svls-vscode
-code --install-extension lramseyer.vaporview
+code --install-extension dalance.svls-vscode@0.0.3
+code --install-extension lramseyer.vaporview@1.5.4
 
 # C/C++ & RISC ASM support
-code --install-extension ms-vscode.cmake-tools
-code --install-extension ms-vscode.cpptools-extension-pac
+code --install-extension ms-vscode.cmake-tools@1.23.52
+code --install-extension ms-vscode.cpptools-extension-pac@1.32.2
 code --install-extension zixuanwang.linkerscript
 code --install-extension trond-snekvik.gnu-mapfiles
-code --install-extension davidegrayson.riscv-asm
+code --install-extension davidegrayson.riscv-asm@1.0.2
 
 # Python support
 code --install-extension ms-python.python
