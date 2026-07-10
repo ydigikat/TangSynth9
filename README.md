@@ -10,8 +10,9 @@ It also serves as an exploration of some audio techniques, a learning and work-b
 
 - [Overview](<docs/00 Overview.md>)
 - [MCU Design](<docs/01 MCU Design.md>)
-- [Audio Pipeline Design](<docs/02 Audio Pipeline Design.md>)
-- [Synthesiser Architecture](<docs/03 Synthesiser Architecture.md>)
+- [MCU Modules (MMIO)](<docs/02 MCU Modules.md>)
+- [Audio Pipeline Design](<docs/03 Audio Pipeline Design.md>)
+- [Synthesiser Architecture](<docs/04 Synthesiser Architecture.md>)
 
 ### Current Status
 
