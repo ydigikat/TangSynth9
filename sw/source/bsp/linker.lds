@@ -9,8 +9,8 @@ MEMORY
     voiceram (rw) : ORIGIN = 0x00010000, LENGTH = 1K
 }
 
-/* Get rid of RWX warning, note that the picorv32 has no MPU so ignores these which means
-   it is enirely possible to accidentally write data over the program code (text) 
+/* Although this will get rid of RWX warning, the picorv32 has no MPU so ignores these which means
+   it is enirely possible for the program to accidentally write data over its own code (text) 
    and constants (rodata) 
 */
 PHDRS
