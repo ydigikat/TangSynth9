@@ -27,7 +27,7 @@ SECTIONS
         . = ALIGN(4);
         KEEP(*(.text.start))      /* Reset vector  */
         KEEP(*(.text.irq))        /* IRQ vector */
-        *(.text*)                  /* Other code */
+        *(.text*)                 /* Rest of the code */
         . = ALIGN(4);
     } > ram :text
 
