@@ -68,7 +68,7 @@ The LFO is based on pattern that I first encountered on the Yamaha CS20M which g
 
 A target using the LFO will select an LFO wave type and depth but has no control over LFO rate which is global.
 
-The modulation matrix is fixed.  Most modules have only a single target for modulation except the DCOs which have separate targets for pitch and pulse-width.  Modulating a modulator (sometimes called 'sidechaining') is not supported on this synth.
+The modulation matrix is fixed.  Modules only provide a single target for modulation except the DCOs which have separate targets for pitch and pulse-width.  Modulating a modulator (sometimes called 'sidechaining') is not supported on this synth.
 
 | Module | Target |
 | ------ | ------ |
