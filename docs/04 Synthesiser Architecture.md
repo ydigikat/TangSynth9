@@ -13,7 +13,7 @@ Performance controls include modulation, bend, glide and portamento.
 
 #### Oscillator (DCO)
 
-Dual DCOs provide the basic waveforms typically found on early synthesisers with optional saturation/jitter to add a little analogue edge to them.  
+Dual DCOs provide the basic waveforms typically found on classic synthesisers with optional saturation/jitter to add a little analogue edge to them.  
 
 DCOs can be pitched individually allowing detuning and provide pitch modulation from either the LFO (vibrato) or envelope generator.
 
