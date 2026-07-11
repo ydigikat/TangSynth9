@@ -81,7 +81,7 @@ The mixer is triggered by the same cycle counter that tracks voice pipeline late
 
 The I2S peripheral drives all audio timing. 
 
-Its sample request signal (req) is the heartbeat of the pipeline, it initiates the mix cycle, triggers the APCR update check, and ultimately clocks out the finished sample. 
+Its sample request signal (req) is the heartbeat of the pipeline, it initiates the mix cycle, triggers the VRCR update check, and ultimately clocks out the finished sample. 
 
 The pipeline is a follower of I2S timing throughout.
 
