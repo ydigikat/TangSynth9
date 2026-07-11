@@ -103,7 +103,7 @@ The stereo panning is somewhat pointless as the template does not implement any 
 | Mode | Notes |
 | ---- | ----- |
 | Poly | 4-voice polyphonic, oldest voice steal|
-| Mono | Monophonic mode, voice stack (trill) support |
+| Mono | Monophonic mode, return to last voice (trill) support |
 | Legato | Monophonic legato mode (glide) |
 | Unison | 4-voice unison, fixed detune|
 
