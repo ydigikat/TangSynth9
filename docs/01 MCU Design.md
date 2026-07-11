@@ -4,7 +4,7 @@ The MCU handles handles voice lifecycle, parameters, MIDI parsing and generation
 
 #### Software Architecture
 
-The MCU uses a bare-metal, super-loop approach with interrupts to signal incoming MIDI data and drive block timing.
+The MCU uses a bare-metal, super-loop approach with hardware interrupts for incoming MIDI data and to drive block timing.
 
 ![Software Architecture](assets/images/sw_architecture.svg)
 
