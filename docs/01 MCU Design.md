@@ -35,16 +35,16 @@ See [MCU Modules](<02 MCU Modules.md>)
 
 Much of the synthesiser code in the firmware is ported from my ARM MCU based projects which have an FPU and therefore use single precision, normalised, floating point. 
 
-This MCU has no FPU, floating point support or math libraries so fixed point decimal is used.
+This MCU has no FPU, floating point support or math libraries so porting to fixed point decimal is required.
 
 | Signal | Range | Type | Format | Notes |
 | ------ | ----- | ------ | ----- | ---- |
 | Phase Acc | 0-2^24 | uint32_t | Q24.0 | Counter - no fraction |
 | FCW  | 0-2^24 | uint32_t | Q24.0 | Derivative of Phase Acc width |
-| Control Rate Signals   | Q1.15| int32_t | SQ1.15 | Bipolar normalised (-1.0:~1.0) |
-| User Parameters | 0-2^7 | uint8_t |-  | MIDI CC (7-bit) values |
+| Control Rate Signals   | SQ1.15| int32_t | SQ1.15 | Bipolar normalised (-1.0:~1.0) |
+| User Parameters | 0-2^7 | Q8 | uint8t| MIDI CC (7-bit) values |
 
-Rather than create fixed point math functions (or approximations) I use Python scripts to generate precomputed lookup tables. While these discrete values will change the characteristics of the synthesiser subtly, musically these are irrelevant.
+To avoid the need to create fixed point math functions (or their approximations), I instead use Python scripts to precompute lookup tables. While these discrete values will change the characteristics of the synthesiser subtly, musically these are irrelevant.
 
 ## Parameter Mapping
 
