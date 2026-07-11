@@ -39,7 +39,7 @@ The MIDI module is only responsible for receiving data bytes and signalling this
 
 General purpose output module.  The state of a pin can be controlled using software however the pin assigment cannot, this is defined by the RTL.
 
-Pins 0-5 are hardwired to the user LEDs on the Tang Nano 9K development board.
+Pins 0-5 are wired to the user LEDs on the Tang Nano 9K development board. The other pins are left unconnected in the template. 
 
 Bits 0-15 are used to set a pin, corresponding bits 16-31 are used to reset a pin.  Reading the register will return zeros (no state).
 
@@ -49,7 +49,7 @@ Bits 0-15 are used to set a pin, corresponding bits 16-31 are used to reset a pi
 | Register | Bits| Field |
 | -------- | --- | ------- |
 | BSR | [15:0] | Set pins 0-15 on |
-|     | [31:0] | Set pins 0-15 off |
+|     | [31:15] | Set pins 0-15 off |
 
 
 ### Interface
