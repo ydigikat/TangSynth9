@@ -55,7 +55,7 @@ _irq_handler:
   # Allocate stack frame for preserved registers (16x4 bytes = 64)
   addi sp, sp, -64
 
-  # Save caller-saved registers
+  # Save caller-saved registers, only those used by C compiler. 
   sw ra, 0(sp)        # return address (clobbered by jal to irq())
   sw t0, 4(sp)        # temporaries
   sw t1, 8(sp)
