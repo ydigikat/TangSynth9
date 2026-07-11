@@ -22,8 +22,8 @@ static struct midi_msg *midi_parse_rt_msg(uint8_t byte);
 static bool midi_parse_message(struct midi_instance *midi_in, uint8_t byte);
 
 /*
-* Parses MIDI messages, this will only return a complete message and should
-* be called repeatedly passing in received bytes.  It manages state internally.
+* Parses MIDI messages, this will only return a complete message (or error) and should
+* be called repeatedly passing in received bytes until it does.  It manages state internally.
 */
 struct midi_msg *midi_parse(struct midi_instance *midi_in, uint8_t byte)
 {
