@@ -1,7 +1,7 @@
 #------------------------------------------------------------------------------
 # Jason Wilden 2026
 #------------------------------------------------------------------------------
-# picorv32 startup with IRQ support.
+# picorv32 startup with simple IRQ support.
 #
 # Memory layout:
 #   0x00000000: Reset vector
