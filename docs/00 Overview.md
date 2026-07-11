@@ -6,9 +6,7 @@ TangSynth9 is a complete but relatively simple 6-voice digital synthesiser with 
 
 For full details see: [Synthesiser Architecture](<03 Synthesiser Architecture.md>)
 
-Waveforms are directly calculated and antialiasing provided for the sawtooth wave using a Polynomial BLEP approach.  Since the pulse wave is generated using the 'sum of two saws' approach so anti-aliased as a result.  
-
-The triangle wave contains few unwanted harmonics, a test of DCW antialiasing showed no discernable audible difference so no antialiasing is used for this.
+Waveforms are directly calculated and antialiasing provided for the sawtooth wave using a Polynomial BLEP approach.  Since the pulse wave is generated using the 'sum of two saws' approach it is anti-aliased as a result.  The triangle wave naturally contains few harmonics, a test of DCW antialiasing showed no discernable audible difference so no antialiasing is used for this.
 
 The synthesiser design is architecturally divided into 2 planes, an MCU built around a soft-core CPU and implementing the control plane functions, and an audio pipeline in pure RTL running the data plane.  Together these form the SOC.
 
