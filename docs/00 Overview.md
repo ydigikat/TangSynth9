@@ -50,7 +50,7 @@ The SOC chip implementation comprises:
 
 - [MCU](<01 MCU Design.md>)
   - [Yosys PicoRV32](https://github.com/YosysHQ/picorv32) CPU @ 24MHz
-  - 16K BRAM
+  - 16K SRAM (BRAM)
   - 1K VRAM
   - IRQ support enabled
   - Hardware MUL/DIV/BARREL SHIFTER enabled
