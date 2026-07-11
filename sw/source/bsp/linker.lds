@@ -10,7 +10,7 @@ MEMORY
 }
 
 /* Although this will get rid of RWX warning, the picorv32 has no MPU so ignores these which means
-   it is enirely possible for the program to accidentally write data over its own code (text) 
+   it is enirely possible for the program to accidentally write over its own code (text) 
    and constants (rodata) 
 */
 PHDRS
