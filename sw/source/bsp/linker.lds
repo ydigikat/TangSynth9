@@ -64,7 +64,7 @@ SECTIONS
         __stack_bottom = .;
         . += 0x100;  /* Reserve 256 bytes for stack checking */
         . = ALIGN(16);
-         __ram_end = .;  /* stash for use in overflow assert.  voiceram moves . */
+         __ram_end = .;  /* stash for use in overflow assert before decl voiceram moves . */
     } > ram
 
     /* Voice RAM - separate dual ported BRAM for voice data exchange */
