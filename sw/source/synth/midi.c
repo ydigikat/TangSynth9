@@ -71,8 +71,8 @@ static struct midi_msg *midi_parse_rt_msg(uint8_t byte)
 
 /*
 * The main MIDI parser process.  Note that sysex messages are not supported
-* but are drained, there is currently no timeout, so if an end of sysex flag 
-* is not received so this will stall the MIDI parser.  
+* but are drained.  Fixme: if an end of sysex flag is not received this will 
+* stall the MIDI parser.  Add timeout or max byte counter.
 */
 static bool midi_parse_message(struct midi_instance *midi_in, uint8_t byte)
 {
