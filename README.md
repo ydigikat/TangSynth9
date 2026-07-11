@@ -2,6 +2,8 @@
 
 TangSynth9 is a template design for FPGA based digital synthesisers on the Tang Nano 9K development board (GW1NR-9 FPGA).
 
+The synth is implemented as a system on chip (SOC) using the soft core picorv32.
+
 It also serves as an exploration of some audio techniques, a learning and work-bench exploration tool for me.
 
 >This is a hobby project.  It will likely go for extended periods without updates when my professional work takes up my time.  I am a commercial embedded engineer (with some 44 years experience) but I do not apply the same rigour to my hobby projects as I would to a peer-reviewed commercial project, so expect to see things that make you wince.
