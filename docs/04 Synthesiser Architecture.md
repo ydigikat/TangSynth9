@@ -4,7 +4,7 @@ The template synthesiser is a fully functional, albeit straightforward, classic 
 
 It does not model any specific synthesiser nor does it use sophisticated DSP to obtain an analogue sound however it does use a few simple techniques to achieve some semblance of a classic sound.
 
-It provides 4-voice polyphony with monophonic and unison voice modes.
+It provides 6-voice polyphony with monophonic and unison voice modes.
 
 Performance controls include modulation, bend, glide and portamento.
 
