@@ -41,8 +41,8 @@ This MCU has no FPU, floating point support or math libraries so porting to fixe
 | ------ | ----- | ------ | ----- | ---- |
 | Phase Acc | 0-2^24 | uint32_t | Q24.0 | Counter - no fraction |
 | FCW  | 0-2^24 | uint32_t | Q24.0 | Derivative of Phase Acc width |
-| Control Rate Signals   | SQ1.15| int32_t | SQ1.15 | Bipolar normalised (-1.0:~1.0) |
-| User Parameters | 0-2^7 | Q8 | uint8t| MIDI CC (7-bit) values |
+| Control Rate Signals   | -2^16-2^15| int32_t | SQ1.15 | Bipolar normalised (-1.0:~1.0) |
+| User Parameters | 0-2^7 | uint8t| Q8 |MIDI CC (7-bit) values |
 
 To avoid the need to create fixed point math functions (or their approximations), I instead use Python scripts to precompute lookup tables. While these discrete values will change the characteristics of the synthesiser subtly, musically these are irrelevant.
 
