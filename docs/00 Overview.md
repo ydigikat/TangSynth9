@@ -18,7 +18,7 @@ The MCU handles voice lifecycle, parameters, MIDI parsing and generation of cont
 
 The Audio Pipeline is concerned only with audio DSP, handling the DCO (oscillators), DCF (filter) and DCA (amplifier) modules.
 
-Control rate signals run slower than sample rate so are calculated in blocks rather than sample accurate.  The control block length (stepping) is 46 samples which is an update every ~1ms which is musically inaudble.
+Control rate signals run slower than sample rate so are applied in blocks rather than sample accurate.  The control block length (stepping) is 46 samples which is an update every ~1ms which is musically inaudble.
 
 Control data passes from the CPU to the audio pipeline via shared memory (VRAM) with access controlled by the VRCR (Voice RAM Control Register). This memory holds modulator values and parameters managed by the MCU and required by the audio pipeline during DSP operations.
 
